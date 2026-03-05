@@ -10,6 +10,11 @@ Public Class frmEnterReading
     Private ReadOnly lblLastReadingDate As New Label()
     Private ReadOnly btnSaveReading As New Button()
     Private ReadOnly btnRegisterCustomer As New Button()
+    Private ReadOnly btnProcessPayment As New Button()
+    Private ReadOnly btnViewBills As New Button()
+    Private ReadOnly btnMyActivity As New Button()
+    Private ReadOnly btnChangePassword As New Button()
+    Private ReadOnly lblTodayCollections As New Label()
     Private ReadOnly btnLogout As New Button()
     Private ReadOnly err As New ErrorProvider()
     Private ReadOnly tips As New ToolTip()
@@ -24,14 +29,17 @@ Public Class frmEnterReading
     Private Sub InitializeComponent()
         Me.Text = "Enter Meter Reading"
         Me.StartPosition = FormStartPosition.CenterScreen
-        Me.Width = 560
-        Me.Height = 350
+        Me.Width = 700
+        Me.Height = 390
+        Me.MinimumSize = New Size(680, 380)
 
         Dim lblCustomer As New Label() With {.Text = "Customer", .Left = 30, .Top = 30, .AutoSize = True}
         cboCustomer.Left = 190
         cboCustomer.Top = 25
         cboCustomer.Width = 320
-        cboCustomer.DropDownStyle = ComboBoxStyle.DropDownList
+        cboCustomer.DropDownStyle = ComboBoxStyle.DropDown
+        cboCustomer.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+        cboCustomer.AutoCompleteSource = AutoCompleteSource.ListItems
         AddHandler cboCustomer.SelectedIndexChanged, AddressOf cboCustomer_SelectedIndexChanged
 
         Dim lblNewReading As New Label() With {.Text = "New Reading", .Left = 30, .Top = 75, .AutoSize = True}
@@ -59,21 +67,72 @@ Public Class frmEnterReading
         lblLastReadingDate.Text = "-"
 
         btnSaveReading.Text = "Save Reading"
-        btnSaveReading.Left = 190
-        btnSaveReading.Top = 235
-        btnSaveReading.Width = 140
+        btnSaveReading.Width = 130
+        btnSaveReading.Height = 32
         AddHandler btnSaveReading.Click, AddressOf btnSaveReading_Click
 
         btnRegisterCustomer.Text = "Register Customer"
-        btnRegisterCustomer.Left = 190
-        btnRegisterCustomer.Top = 270
-        btnRegisterCustomer.Width = 140
+        btnRegisterCustomer.Width = 130
+        btnRegisterCustomer.Height = 32
         AddHandler btnRegisterCustomer.Click, AddressOf btnRegisterCustomer_Click
 
+        btnProcessPayment.Text = "Process Payment"
+        btnProcessPayment.Width = 130
+        btnProcessPayment.Height = 32
+        AddHandler btnProcessPayment.Click, AddressOf btnProcessPayment_Click
+
+        btnViewBills.Text = "View Bills"
+        btnViewBills.Width = 130
+        btnViewBills.Height = 32
+        AddHandler btnViewBills.Click, AddressOf btnViewBills_Click
+
+        btnMyActivity.Text = "My Activity"
+        btnMyActivity.Width = 130
+        btnMyActivity.Height = 32
+        AddHandler btnMyActivity.Click, AddressOf btnMyActivity_Click
+
+        btnChangePassword.Text = "Change Password"
+        btnChangePassword.Width = 130
+        btnChangePassword.Height = 32
+        AddHandler btnChangePassword.Click, AddressOf btnChangePassword_Click
+
+        Dim actionPanel As New FlowLayoutPanel()
+        actionPanel.Left = 190
+        actionPanel.Top = 232
+        actionPanel.Width = 480
+        actionPanel.Height = 72
+        actionPanel.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Bottom
+        actionPanel.FlowDirection = FlowDirection.LeftToRight
+        actionPanel.WrapContents = True
+
+        actionPanel.Controls.Add(btnSaveReading)
+        actionPanel.Controls.Add(btnRegisterCustomer)
+        actionPanel.Controls.Add(btnProcessPayment)
+        actionPanel.Controls.Add(btnViewBills)
+        actionPanel.Controls.Add(btnMyActivity)
+        actionPanel.Controls.Add(btnChangePassword)
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleButton(btnSaveReading, True)
+        UiStyleHelper.StyleButton(btnRegisterCustomer)
+        UiStyleHelper.StyleButton(btnProcessPayment)
+        UiStyleHelper.StyleButton(btnViewBills)
+        UiStyleHelper.StyleButton(btnMyActivity)
+        UiStyleHelper.StyleButton(btnChangePassword)
+        UiStyleHelper.StyleButton(btnLogout)
+
+        lblTodayCollections.Left = 190
+        lblTodayCollections.Top = 315
+        lblTodayCollections.AutoSize = True
+        lblTodayCollections.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        lblTodayCollections.Text = "Today's Collections: 0.00"
+
         btnLogout.Text = "Logout"
-        btnLogout.Left = 350
-        btnLogout.Top = 270
-        btnLogout.Width = 100
+        btnLogout.Left = 590
+        btnLogout.Top = 310
+        btnLogout.Width = 80
+        btnLogout.Height = 32
+        btnLogout.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
         Me.Controls.Add(lblCustomer)
@@ -86,8 +145,8 @@ Public Class frmEnterReading
         Me.Controls.Add(lblLastReadingValue)
         Me.Controls.Add(lblLastReadingDateTitle)
         Me.Controls.Add(lblLastReadingDate)
-        Me.Controls.Add(btnSaveReading)
-        Me.Controls.Add(btnRegisterCustomer)
+        Me.Controls.Add(actionPanel)
+        Me.Controls.Add(lblTodayCollections)
         Me.Controls.Add(btnLogout)
 
         AddHandler Me.Load, AddressOf frmEnterReading_Load
@@ -115,6 +174,20 @@ Public Class frmEnterReading
         tips.SetToolTip(txtNewReading, "Enter a positive reading")
 
         LoadCustomers()
+        LoadTodayCollections()
+    End Sub
+
+    Private Sub LoadTodayCollections()
+        Try
+            Const sql As String = "SELECT COALESCE(SUM(amount_paid), 0) FROM payments WHERE received_by = @staff_id AND DATE(payment_date) = CURDATE();"
+            Dim parameters As New Dictionary(Of String, Object) From {
+                {"@staff_id", CurrentUser.UserId}
+            }
+            Dim total As Decimal = Convert.ToDecimal(DatabaseHelper.ExecuteScalar(sql, parameters))
+            lblTodayCollections.Text = $"Today's Collections: {total:N2}"
+        Catch
+            lblTodayCollections.Text = "Today's Collections: -"
+        End Try
     End Sub
 
     Private Sub LoadCustomers()
@@ -278,6 +351,31 @@ Public Class frmEnterReading
 
     Private Sub btnLogout_Click(sender As Object, e As EventArgs)
         SessionManager.Logout(Me)
+    End Sub
+
+    Private Sub btnProcessPayment_Click(sender As Object, e As EventArgs)
+        Using frm As New frmPayment()
+            frm.ShowDialog(Me)
+        End Using
+        LoadTodayCollections()
+    End Sub
+
+    Private Sub btnChangePassword_Click(sender As Object, e As EventArgs)
+        Using frm As New frmChangePassword()
+            frm.ShowDialog(Me)
+        End Using
+    End Sub
+
+    Private Sub btnMyActivity_Click(sender As Object, e As EventArgs)
+        Using frm As New frmStaffActivity()
+            frm.ShowDialog(Me)
+        End Using
+    End Sub
+
+    Private Sub btnViewBills_Click(sender As Object, e As EventArgs)
+        Using frm As New frmBills()
+            frm.ShowDialog(Me)
+        End Using
     End Sub
 
     Private Sub GenerateBill(conn As MySqlConnection, tx As MySqlTransaction, customerId As Integer, readingId As Integer, readingDate As Date, consumption As Decimal)

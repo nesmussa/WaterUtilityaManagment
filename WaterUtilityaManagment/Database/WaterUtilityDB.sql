@@ -11,6 +11,7 @@ CREATE TABLE users (
     full_name VARCHAR(100),
     email VARCHAR(100),
     phone VARCHAR(20),
+    force_password_change BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -28,7 +29,7 @@ CREATE TABLE customers (
 
 -- 3. Tariffs table (water rates)
 CREATE TABLE tariffs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    tariff_id INT AUTO_INCREMENT PRIMARY KEY,
     rate_per_unit DECIMAL(10,2) NOT NULL,   -- price per cubic meter
     effective_from DATE NOT NULL,
     effective_to DATE DEFAULT NULL           -- NULL means currently active
@@ -84,28 +85,28 @@ CREATE TABLE payment_allocations (
 
 -- 8. Audit log table (for tracking actions)
 CREATE TABLE audit_log (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    action VARCHAR(255) NOT NULL,
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    action_name VARCHAR(100) NOT NULL,
     table_name VARCHAR(50),
     record_id INT,
     details TEXT,
     ip_address VARCHAR(45),
-    action_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    action_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Insert a default admin/manager (password: admin123, hashed with SHA2)
-INSERT INTO users (username, password_hash, role, full_name, email, phone, is_active) 
-VALUES ('admin', SHA2('admin123', 256), 'manager', 'System Administrator', 'admin@water.com', '1234567890', TRUE);
+INSERT INTO users (username, password_hash, role, full_name, email, phone, force_password_change, is_active) 
+VALUES ('admin', SHA2('admin123', 256), 'manager', 'System Administrator', 'admin@water.com', '1234567890', FALSE, TRUE);
 
 -- Insert a sample staff user (password: staff123)
-INSERT INTO users (username, password_hash, role, full_name, email, phone, is_active) 
-VALUES ('staff1', SHA2('staff123', 256), 'staff', 'John Staff', 'john@water.com', '1234567891', TRUE);
+INSERT INTO users (username, password_hash, role, full_name, email, phone, force_password_change, is_active) 
+VALUES ('staff1', SHA2('staff123', 256), 'staff', 'John Staff', 'john@water.com', '1234567891', FALSE, TRUE);
 
 -- Insert a sample customer user (password: customer123)
-INSERT INTO users (username, password_hash, role, full_name, email, phone, is_active) 
-VALUES ('cust1', SHA2('customer123', 256), 'customer', 'Jane Customer', 'jane@email.com', '1234567892', TRUE);
+INSERT INTO users (username, password_hash, role, full_name, email, phone, force_password_change, is_active) 
+VALUES ('cust1', SHA2('customer123', 256), 'customer', 'Jane Customer', 'jane@email.com', '1234567892', TRUE, TRUE);
 
 -- Insert the customer details (using the last inserted ID)
 INSERT INTO customers (id, address, meter_number, installation_date, last_reading, last_reading_date) 
@@ -228,8 +229,8 @@ CREATE TRIGGER after_user_insert
 AFTER INSERT ON users
 FOR EACH ROW
 BEGIN
-    INSERT INTO audit_log (user_id, action, table_name, record_id, details)
-    VALUES (NEW.id, 'INSERT', 'users', NEW.id, CONCAT('New user created: ', NEW.username, ' with role: ', NEW.role));
+    INSERT INTO audit_log (user_id, action_name, table_name, record_id, details, action_time)
+    VALUES (NEW.id, 'UserInserted', 'users', NEW.id, CONCAT('New user created: ', NEW.username, ' with role: ', NEW.role), NOW());
 END//
 DELIMITER ;
 
@@ -239,9 +240,9 @@ CREATE TRIGGER after_meter_reading_insert
 AFTER INSERT ON meter_readings
 FOR EACH ROW
 BEGIN
-    INSERT INTO audit_log (user_id, action, table_name, record_id, details)
-    VALUES (NEW.entered_by, 'INSERT', 'meter_readings', NEW.id, 
-            CONCAT('Reading entered: ', NEW.reading_value, ' for customer: ', NEW.customer_id));
+    INSERT INTO audit_log (user_id, action_name, table_name, record_id, details, action_time)
+    VALUES (NEW.entered_by, 'MeterReadingInserted', 'meter_readings', NEW.id, 
+            CONCAT('Reading entered: ', NEW.reading_value, ' for customer: ', NEW.customer_id), NOW());
 END//
 DELIMITER ;
 
@@ -251,9 +252,9 @@ CREATE TRIGGER after_payment_insert
 AFTER INSERT ON payments
 FOR EACH ROW
 BEGIN
-    INSERT INTO audit_log (user_id, action, table_name, record_id, details)
-    VALUES (NEW.received_by, 'INSERT', 'payments', NEW.id, 
-            CONCAT('Payment of ', NEW.amount_paid, ' received from customer: ', NEW.customer_id));
+    INSERT INTO audit_log (user_id, action_name, table_name, record_id, details, action_time)
+    VALUES (NEW.received_by, 'PaymentInserted', 'payments', NEW.id, 
+            CONCAT('Payment of ', NEW.amount_paid, ' received from customer: ', NEW.customer_id), NOW());
 END//
 DELIMITER ;
 

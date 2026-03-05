@@ -22,6 +22,7 @@ Public Class frmRegisterCustomer
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 550
         Me.Height = 480
+        Me.MinimumSize = New Size(550, 480)
 
         Dim lblFullName As New Label() With {.Text = "Full Name", .Left = 30, .Top = 30, .AutoSize = True}
         txtFullName.Left = 220
@@ -70,6 +71,10 @@ Public Class frmRegisterCustomer
         btnLogout.Top = 320
         btnLogout.Width = 120
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleButton(btnRegister, True)
+        UiStyleHelper.StyleButton(btnLogout)
 
         Me.Controls.Add(lblFullName)
         Me.Controls.Add(txtFullName)

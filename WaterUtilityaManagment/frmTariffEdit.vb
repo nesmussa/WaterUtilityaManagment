@@ -42,6 +42,7 @@ Public Class frmTariffEdit
         Me.StartPosition = FormStartPosition.CenterParent
         Me.Width = 420
         Me.Height = 260
+        Me.MinimumSize = New Size(420, 260)
 
         Dim lblRate As New Label() With {.Text = "Rate", .Left = 20, .Top = 25, .AutoSize = True}
         nudRate.Left = 150
@@ -87,6 +88,11 @@ Public Class frmTariffEdit
         btnLogout.Top = 165
         btnLogout.Width = 90
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleButton(btnSave, True)
+        UiStyleHelper.StyleButton(btnCancel)
+        UiStyleHelper.StyleButton(btnLogout)
 
         Me.Controls.Add(lblRate)
         Me.Controls.Add(nudRate)

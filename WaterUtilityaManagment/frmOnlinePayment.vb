@@ -19,11 +19,13 @@ Public Class frmOnlinePayment
         Me.StartPosition = FormStartPosition.CenterParent
         Me.Width = 760
         Me.Height = 480
+        Me.MinimumSize = New Size(720, 440)
 
         dgvUnpaidBills.Left = 20
         dgvUnpaidBills.Top = 20
         dgvUnpaidBills.Width = 700
         dgvUnpaidBills.Height = 300
+        dgvUnpaidBills.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvUnpaidBills.AllowUserToAddRows = False
         dgvUnpaidBills.AllowUserToDeleteRows = False
         dgvUnpaidBills.AutoGenerateColumns = False
@@ -42,18 +44,26 @@ Public Class frmOnlinePayment
         txtAmount.Left = 80
         txtAmount.Top = 335
         txtAmount.Width = 130
+        txtAmount.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
 
         btnPay.Text = "Pay Now"
         btnPay.Left = 240
         btnPay.Top = 333
         btnPay.Width = 120
+        btnPay.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         AddHandler btnPay.Click, AddressOf btnPay_Click
 
         btnLogout.Text = "Logout"
         btnLogout.Left = 380
         btnLogout.Top = 333
         btnLogout.Width = 120
+        btnLogout.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleDataGrid(dgvUnpaidBills)
+        UiStyleHelper.StyleButton(btnPay, True)
+        UiStyleHelper.StyleButton(btnLogout)
 
         Me.Controls.Add(dgvUnpaidBills)
         Me.Controls.Add(lblAmount)

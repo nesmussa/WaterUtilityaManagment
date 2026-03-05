@@ -18,11 +18,13 @@ Public Class frmTariffs
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 850
         Me.Height = 560
+        Me.MinimumSize = New Size(760, 520)
 
         dgvTariffs.Left = 20
         dgvTariffs.Top = 20
         dgvTariffs.Width = 790
         dgvTariffs.Height = 420
+        dgvTariffs.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvTariffs.AllowUserToAddRows = False
         dgvTariffs.AllowUserToDeleteRows = False
         dgvTariffs.ReadOnly = True
@@ -31,34 +33,49 @@ Public Class frmTariffs
         dgvTariffs.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
         btnAdd.Text = "Add New Tariff"
-        btnAdd.Left = 20
-        btnAdd.Top = 460
         btnAdd.Width = 150
+        btnAdd.Height = 32
         AddHandler btnAdd.Click, AddressOf btnAdd_Click
 
         btnEdit.Text = "Edit"
-        btnEdit.Left = 190
-        btnEdit.Top = 460
         btnEdit.Width = 120
+        btnEdit.Height = 32
         AddHandler btnEdit.Click, AddressOf btnEdit_Click
 
         btnDeactivate.Text = "Deactivate"
-        btnDeactivate.Left = 330
-        btnDeactivate.Top = 460
         btnDeactivate.Width = 120
+        btnDeactivate.Height = 32
         AddHandler btnDeactivate.Click, AddressOf btnDeactivate_Click
 
         btnLogout.Text = "Logout"
-        btnLogout.Left = 470
-        btnLogout.Top = 460
         btnLogout.Width = 120
+        btnLogout.Height = 32
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
+        Dim actionPanel As New FlowLayoutPanel()
+        actionPanel.Left = 20
+        actionPanel.Top = 452
+        actionPanel.Width = 540
+        actionPanel.Height = 40
+        actionPanel.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        actionPanel.FlowDirection = FlowDirection.LeftToRight
+        actionPanel.WrapContents = False
+        actionPanel.Padding = New Padding(0)
+        actionPanel.Margin = New Padding(0)
+        actionPanel.Controls.Add(btnAdd)
+        actionPanel.Controls.Add(btnEdit)
+        actionPanel.Controls.Add(btnDeactivate)
+        actionPanel.Controls.Add(btnLogout)
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleDataGrid(dgvTariffs)
+        UiStyleHelper.StyleButton(btnAdd, True)
+        UiStyleHelper.StyleButton(btnEdit, True)
+        UiStyleHelper.StyleButton(btnDeactivate)
+        UiStyleHelper.StyleButton(btnLogout)
+
         Me.Controls.Add(dgvTariffs)
-        Me.Controls.Add(btnAdd)
-        Me.Controls.Add(btnEdit)
-        Me.Controls.Add(btnDeactivate)
-        Me.Controls.Add(btnLogout)
+        Me.Controls.Add(actionPanel)
 
         AddHandler Me.Load, AddressOf frmTariffs_Load
     End Sub

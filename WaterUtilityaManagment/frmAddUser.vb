@@ -37,6 +37,7 @@ Public Class frmAddUser
         Me.StartPosition = FormStartPosition.CenterParent
         Me.Width = 460
         Me.Height = 360
+        Me.MinimumSize = New Size(460, 360)
 
         Dim lblUsername As New Label() With {.Text = "Username", .Left = 20, .Top = 25, .AutoSize = True}
         txtUsername.Left = 140
@@ -93,6 +94,11 @@ Public Class frmAddUser
         btnLogout.Top = 265
         btnLogout.Width = 85
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleButton(btnSave, True)
+        UiStyleHelper.StyleButton(btnCancel)
+        UiStyleHelper.StyleButton(btnLogout)
 
         Me.Controls.Add(lblUsername)
         Me.Controls.Add(txtUsername)

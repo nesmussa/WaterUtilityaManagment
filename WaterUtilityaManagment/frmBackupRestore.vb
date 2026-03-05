@@ -16,6 +16,7 @@ Public Class frmBackupRestore
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 380
         Me.Height = 170
+        Me.MinimumSize = New Size(380, 170)
 
         btnBackup.Text = "Backup Database"
         btnBackup.Left = 30
@@ -35,9 +36,26 @@ Public Class frmBackupRestore
         btnLogout.Width = 140
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleButton(btnBackup, True)
+        UiStyleHelper.StyleButton(btnRestore)
+        UiStyleHelper.StyleButton(btnLogout)
+
         Me.Controls.Add(btnBackup)
         Me.Controls.Add(btnRestore)
         Me.Controls.Add(btnLogout)
+
+        AddHandler Me.Load, AddressOf frmBackupRestore_Load
+    End Sub
+
+    Private Sub frmBackupRestore_Load(sender As Object, e As EventArgs)
+        If Not String.Equals(CurrentUser.Role, "Manager", StringComparison.OrdinalIgnoreCase) Then
+            MessageBox.Show("Access denied. Only managers can access backup and restore.",
+                            "Unauthorized",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning)
+            Me.Close()
+        End If
     End Sub
 
     Private Sub btnLogout_Click(sender As Object, e As EventArgs)

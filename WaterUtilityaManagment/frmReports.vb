@@ -1,3 +1,5 @@
+Imports System.Drawing.Printing
+
 Public Class frmReports
     Inherits Form
 
@@ -16,8 +18,20 @@ Public Class frmReports
     Private ReadOnly dgvOutstanding As New DataGridView()
 
     Private ReadOnly dgvStaffActivity As New DataGridView()
+    Private ReadOnly lblTotalCustomers As New Label()
+    Private ReadOnly lblTotalUnpaid As New Label()
+    Private ReadOnly lblCurrentMonthRevenue As New Label()
+    Private ReadOnly btnManageTariffs As New Button()
+    Private ReadOnly btnBackupRestore As New Button()
+    Private ReadOnly btnAuditLog As New Button()
+    Private ReadOnly btnViewBills As New Button()
+    Private ReadOnly btnExportExcel As New Button()
+    Private ReadOnly btnExportPdf As New Button()
     Private ReadOnly btnManageStaff As New Button()
     Private ReadOnly btnLogout As New Button()
+
+    Private _printRows As List(Of String)
+    Private _printIndex As Integer
 
     Public Sub New()
         InitializeComponent()
@@ -28,8 +42,13 @@ Public Class frmReports
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 1100
         Me.Height = 700
+        Me.MinimumSize = New Size(1000, 620)
 
-        tabReports.Dock = DockStyle.Fill
+        tabReports.Left = 10
+        tabReports.Top = 125
+        tabReports.Width = Me.ClientSize.Width - 20
+        tabReports.Height = Me.ClientSize.Height - 135
+        tabReports.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim tabSummary As New TabPage("Paid vs Unpaid Summary")
         Dim tabRevenue As New TabPage("Revenue by Period")
@@ -46,25 +65,106 @@ Public Class frmReports
         tabReports.TabPages.Add(tabOutstanding)
         tabReports.TabPages.Add(tabStaff)
 
-        btnManageStaff.Text = "Manage Staff"
-        btnManageStaff.Width = 120
+        lblTotalCustomers.Margin = New Padding(0, 0, 18, 0)
+        lblTotalCustomers.AutoSize = True
+        lblTotalCustomers.Text = "Customers: 0"
+
+        lblTotalUnpaid.Margin = New Padding(0, 0, 18, 0)
+        lblTotalUnpaid.AutoSize = True
+        lblTotalUnpaid.Text = "Unpaid Amount: 0.00"
+
+        lblCurrentMonthRevenue.Margin = New Padding(0)
+        lblCurrentMonthRevenue.AutoSize = True
+        lblCurrentMonthRevenue.Text = "Current Month Revenue: 0.00"
+
+        Dim metricsPanel As New FlowLayoutPanel()
+        metricsPanel.Left = 10
+        metricsPanel.Top = 10
+        metricsPanel.Width = Me.ClientSize.Width - 20
+        metricsPanel.Height = 24
+        metricsPanel.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        metricsPanel.FlowDirection = FlowDirection.LeftToRight
+        metricsPanel.WrapContents = False
+        metricsPanel.Controls.Add(lblTotalCustomers)
+        metricsPanel.Controls.Add(lblTotalUnpaid)
+        metricsPanel.Controls.Add(lblCurrentMonthRevenue)
+
+        Dim actionPanel As New FlowLayoutPanel()
+        actionPanel.Left = 10
+        actionPanel.Top = 40
+        actionPanel.Width = Me.ClientSize.Width - 20
+        actionPanel.Height = 70
+        actionPanel.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        actionPanel.FlowDirection = FlowDirection.LeftToRight
+        actionPanel.WrapContents = True
+        actionPanel.AutoScroll = False
+
+        btnManageTariffs.Text = "Manage Tariffs"
+        btnManageTariffs.Width = 110
+        btnManageTariffs.Height = 30
+        AddHandler btnManageTariffs.Click, AddressOf btnManageTariffs_Click
+
+        btnBackupRestore.Text = "Backup / Restore"
+        btnBackupRestore.Width = 110
+        btnBackupRestore.Height = 30
+        AddHandler btnBackupRestore.Click, AddressOf btnBackupRestore_Click
+
+        btnAuditLog.Text = "Audit Log"
+        btnAuditLog.Width = 110
+        btnAuditLog.Height = 30
+        AddHandler btnAuditLog.Click, AddressOf btnAuditLog_Click
+
+        btnViewBills.Text = "View Bills"
+        btnViewBills.Width = 110
+        btnViewBills.Height = 30
+        AddHandler btnViewBills.Click, AddressOf btnViewBills_Click
+
+        btnExportExcel.Text = "Export Excel"
+        btnExportExcel.Width = 110
+        btnExportExcel.Height = 30
+        AddHandler btnExportExcel.Click, AddressOf btnExportExcel_Click
+
+        btnExportPdf.Text = "Export PDF"
+        btnExportPdf.Width = 110
+        btnExportPdf.Height = 30
+        AddHandler btnExportPdf.Click, AddressOf btnExportPdf_Click
+
+        btnManageStaff.Text = "Manage Users"
+        btnManageStaff.Width = 110
         btnManageStaff.Height = 30
-        btnManageStaff.Left = Me.ClientSize.Width - 250
-        btnManageStaff.Top = 10
-        btnManageStaff.Anchor = AnchorStyles.Top Or AnchorStyles.Right
         AddHandler btnManageStaff.Click, AddressOf btnManageStaff_Click
 
         btnLogout.Text = "Logout"
-        btnLogout.Width = 100
+        btnLogout.Width = 90
         btnLogout.Height = 30
-        btnLogout.Left = Me.ClientSize.Width - 120
-        btnLogout.Top = 10
-        btnLogout.Anchor = AnchorStyles.Top Or AnchorStyles.Right
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
+        actionPanel.Controls.Add(btnManageTariffs)
+        actionPanel.Controls.Add(btnBackupRestore)
+        actionPanel.Controls.Add(btnAuditLog)
+        actionPanel.Controls.Add(btnViewBills)
+        actionPanel.Controls.Add(btnExportExcel)
+        actionPanel.Controls.Add(btnExportPdf)
+        actionPanel.Controls.Add(btnManageStaff)
+        actionPanel.Controls.Add(btnLogout)
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleDataGrid(dgvBillSummary)
+        UiStyleHelper.StyleDataGrid(dgvRevenueDaily)
+        UiStyleHelper.StyleDataGrid(dgvOutstanding)
+        UiStyleHelper.StyleDataGrid(dgvStaffActivity)
+        UiStyleHelper.StyleButton(btnManageTariffs)
+        UiStyleHelper.StyleButton(btnBackupRestore)
+        UiStyleHelper.StyleButton(btnAuditLog)
+        UiStyleHelper.StyleButton(btnViewBills)
+        UiStyleHelper.StyleButton(btnExportExcel, True)
+        UiStyleHelper.StyleButton(btnExportPdf, True)
+        UiStyleHelper.StyleButton(btnManageStaff)
+        UiStyleHelper.StyleButton(btnLogout)
+
+        Me.Controls.Add(metricsPanel)
         Me.Controls.Add(tabReports)
-        Me.Controls.Add(btnManageStaff)
-        Me.Controls.Add(btnLogout)
+        Me.Controls.Add(actionPanel)
 
         AddHandler Me.Load, AddressOf frmReports_Load
     End Sub
@@ -168,6 +268,28 @@ Public Class frmReports
         LoadRevenueByPeriod()
         LoadOutstandingBalances()
         LoadStaffActivity()
+        LoadDashboardMetrics()
+    End Sub
+
+    Private Sub LoadDashboardMetrics()
+        Try
+            Const customerSql As String = "SELECT COUNT(*) FROM customers;"
+            Const unpaidSql As String = "SELECT COALESCE(SUM(b.total_amount - COALESCE(pa.paid_total, 0)), 0) FROM bills b LEFT JOIN (SELECT bill_id, SUM(amount_applied) AS paid_total FROM payment_allocations GROUP BY bill_id) pa ON pa.bill_id = b.id WHERE b.status IN ('Unpaid', 'Partial');"
+            Const monthRevenueSql As String = "SELECT COALESCE(SUM(amount_paid), 0) FROM payments WHERE YEAR(payment_date) = YEAR(CURDATE()) AND MONTH(payment_date) = MONTH(CURDATE());"
+
+            Dim totalCustomers As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(customerSql))
+            Dim totalUnpaid As Decimal = Convert.ToDecimal(DatabaseHelper.ExecuteScalar(unpaidSql))
+            Dim currentMonthRevenue As Decimal = Convert.ToDecimal(DatabaseHelper.ExecuteScalar(monthRevenueSql))
+
+            lblTotalCustomers.Text = $"Customers: {totalCustomers}"
+            lblTotalUnpaid.Text = $"Unpaid Amount: {totalUnpaid:N2}"
+            lblCurrentMonthRevenue.Text = $"Current Month Revenue: {currentMonthRevenue:N2}"
+        Catch ex As Exception
+            MessageBox.Show("Failed to load dashboard metrics: " & ex.Message,
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error)
+        End Try
     End Sub
 
     Private Sub LoadPaidVsUnpaidSummary()
@@ -212,6 +334,130 @@ Public Class frmReports
         Using frm As New frmUserManagement()
             frm.ShowDialog(Me)
         End Using
+        LoadStaffActivity()
+    End Sub
+
+    Private Sub btnManageTariffs_Click(sender As Object, e As EventArgs)
+        Using frm As New frmTariffs()
+            frm.ShowDialog(Me)
+        End Using
+        LoadDashboardMetrics()
+    End Sub
+
+    Private Sub btnBackupRestore_Click(sender As Object, e As EventArgs)
+        Using frm As New frmBackupRestore()
+            frm.ShowDialog(Me)
+        End Using
+    End Sub
+
+    Private Sub btnAuditLog_Click(sender As Object, e As EventArgs)
+        Using frm As New frmAuditLog()
+            frm.ShowDialog(Me)
+        End Using
+    End Sub
+
+    Private Sub btnViewBills_Click(sender As Object, e As EventArgs)
+        Using frm As New frmBills()
+            frm.ShowDialog(Me)
+        End Using
+        LoadDashboardMetrics()
+        LoadOutstandingBalances()
+    End Sub
+
+    Private Sub btnExportExcel_Click(sender As Object, e As EventArgs)
+        Dim activeGrid As DataGridView = GetActiveReportGrid()
+        If activeGrid Is Nothing Then
+            MessageBox.Show("No report table available to export.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        GridExportHelper.ExportDataGridViewToCsv(activeGrid, Me)
+    End Sub
+
+    Private Sub btnExportPdf_Click(sender As Object, e As EventArgs)
+        Dim activeGrid As DataGridView = GetActiveReportGrid()
+        If activeGrid Is Nothing Then
+            MessageBox.Show("No report table available to export.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        PreparePrintRows(activeGrid)
+        If _printRows.Count = 0 Then
+            MessageBox.Show("No rows to print.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        Dim printDoc As New PrintDocument()
+        AddHandler printDoc.PrintPage, AddressOf printDoc_PrintPage
+
+        Using pd As New PrintDialog()
+            pd.Document = printDoc
+            pd.UseEXDialog = True
+            If pd.ShowDialog(Me) = DialogResult.OK Then
+                printDoc.Print()
+            End If
+        End Using
+    End Sub
+
+    Private Function GetActiveReportGrid() As DataGridView
+        Select Case tabReports.SelectedIndex
+            Case 0
+                Return dgvBillSummary
+            Case 1
+                Return dgvRevenueDaily
+            Case 2
+                Return dgvOutstanding
+            Case 3
+                Return dgvStaffActivity
+            Case Else
+                Return Nothing
+        End Select
+    End Function
+
+    Private Sub PreparePrintRows(grid As DataGridView)
+        _printRows = New List(Of String)()
+        _printIndex = 0
+
+        Dim header As New List(Of String)()
+        For Each col As DataGridViewColumn In grid.Columns
+            If col.Visible Then
+                header.Add(col.HeaderText)
+            End If
+        Next
+        _printRows.Add(String.Join(" | ", header))
+
+        For Each row As DataGridViewRow In grid.Rows
+            If row.IsNewRow Then
+                Continue For
+            End If
+
+            Dim values As New List(Of String)()
+            For Each col As DataGridViewColumn In grid.Columns
+                If col.Visible Then
+                    values.Add(If(row.Cells(col.Index).Value?.ToString(), String.Empty))
+                End If
+            Next
+
+            _printRows.Add(String.Join(" | ", values))
+        Next
+    End Sub
+
+    Private Sub printDoc_PrintPage(sender As Object, e As PrintPageEventArgs)
+        Dim y As Single = e.MarginBounds.Top
+        Dim lineHeight As Single = e.Graphics.MeasureString("X", Me.Font).Height + 4
+
+        While _printIndex < _printRows.Count
+            If y + lineHeight > e.MarginBounds.Bottom Then
+                e.HasMorePages = True
+                Return
+            End If
+
+            e.Graphics.DrawString(_printRows(_printIndex), Me.Font, Brushes.Black, e.MarginBounds.Left, y)
+            y += lineHeight
+            _printIndex += 1
+        End While
+
+        e.HasMorePages = False
     End Sub
 
     Private Sub LoadRevenueByPeriod()

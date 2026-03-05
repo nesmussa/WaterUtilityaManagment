@@ -3,6 +3,7 @@ Imports MySql.Data.MySqlClient
 Public Class frmPayment
     Inherits Form
 
+    Private ReadOnly _initialCustomerId As Integer?
     Private ReadOnly txtCustomerId As New TextBox()
     Private ReadOnly cboCustomer As New ComboBox()
     Private ReadOnly lblCustomerName As New Label()
@@ -13,7 +14,8 @@ Public Class frmPayment
     Private ReadOnly btnProcessPayment As New Button()
     Private ReadOnly btnLogout As New Button()
 
-    Public Sub New()
+    Public Sub New(Optional initialCustomerId As Integer? = Nothing)
+        _initialCustomerId = initialCustomerId
         InitializeComponent()
     End Sub
 
@@ -22,18 +24,23 @@ Public Class frmPayment
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 950
         Me.Height = 620
+        Me.MinimumSize = New Size(900, 580)
 
         Dim lblCustomerId As New Label() With {.Text = "Customer ID", .Left = 20, .Top = 20, .AutoSize = True}
         txtCustomerId.Left = 120
         txtCustomerId.Top = 15
         txtCustomerId.Width = 120
+        txtCustomerId.Anchor = AnchorStyles.Top Or AnchorStyles.Left
         AddHandler txtCustomerId.Leave, AddressOf txtCustomerId_Leave
 
         Dim lblCustomer As New Label() With {.Text = "Select Customer", .Left = 270, .Top = 20, .AutoSize = True}
         cboCustomer.Left = 380
         cboCustomer.Top = 15
-        cboCustomer.Width = 360
-        cboCustomer.DropDownStyle = ComboBoxStyle.DropDownList
+        cboCustomer.Width = 530
+        cboCustomer.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        cboCustomer.DropDownStyle = ComboBoxStyle.DropDown
+        cboCustomer.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+        cboCustomer.AutoCompleteSource = AutoCompleteSource.ListItems
         AddHandler cboCustomer.SelectedIndexChanged, AddressOf cboCustomer_SelectedIndexChanged
 
         Dim lblNameTitle As New Label() With {.Text = "Customer Name", .Left = 20, .Top = 55, .AutoSize = True}
@@ -46,6 +53,7 @@ Public Class frmPayment
         dgvBills.Top = 90
         dgvBills.Width = 890
         dgvBills.Height = 350
+        dgvBills.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvBills.AllowUserToAddRows = False
         dgvBills.AllowUserToDeleteRows = False
         dgvBills.SelectionMode = DataGridViewSelectionMode.FullRowSelect
@@ -96,11 +104,13 @@ Public Class frmPayment
         txtAmountPaid.Left = 120
         txtAmountPaid.Top = 460
         txtAmountPaid.Width = 150
+        txtAmountPaid.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
 
         Dim lblPaymentMode As New Label() With {.Text = "Payment Mode", .Left = 300, .Top = 465, .AutoSize = True}
         cboPaymentMode.Left = 400
         cboPaymentMode.Top = 460
         cboPaymentMode.Width = 180
+        cboPaymentMode.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         cboPaymentMode.DropDownStyle = ComboBoxStyle.DropDownList
         cboPaymentMode.Items.AddRange(New Object() {"Cash", "Bank Transfer", "Mobile Money", "Online"})
         cboPaymentMode.SelectedIndex = 0
@@ -109,18 +119,26 @@ Public Class frmPayment
         txtReference.Left = 680
         txtReference.Top = 460
         txtReference.Width = 230
+        txtReference.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
 
         btnProcessPayment.Text = "Process Payment"
         btnProcessPayment.Left = 120
         btnProcessPayment.Top = 510
         btnProcessPayment.Width = 180
+        btnProcessPayment.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         AddHandler btnProcessPayment.Click, AddressOf btnProcessPayment_Click
 
         btnLogout.Text = "Logout"
         btnLogout.Left = 320
         btnLogout.Top = 510
         btnLogout.Width = 120
+        btnLogout.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleDataGrid(dgvBills)
+        UiStyleHelper.StyleButton(btnProcessPayment, True)
+        UiStyleHelper.StyleButton(btnLogout)
 
         Me.Controls.Add(lblCustomerId)
         Me.Controls.Add(txtCustomerId)
@@ -154,6 +172,20 @@ Public Class frmPayment
         End If
 
         LoadCustomers()
+
+        If _initialCustomerId.HasValue Then
+            SelectCustomerById(_initialCustomerId.Value)
+        End If
+    End Sub
+
+    Private Sub SelectCustomerById(customerId As Integer)
+        For i As Integer = 0 To cboCustomer.Items.Count - 1
+            Dim item As CustomerItem = TryCast(cboCustomer.Items(i), CustomerItem)
+            If item IsNot Nothing AndAlso item.CustomerId = customerId Then
+                cboCustomer.SelectedIndex = i
+                Exit For
+            End If
+        Next
     End Sub
 
     Private Sub LoadCustomers()

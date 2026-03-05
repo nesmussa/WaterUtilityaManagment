@@ -15,6 +15,7 @@ Public Class frmChangePassword
         Me.StartPosition = FormStartPosition.CenterParent
         Me.Width = 420
         Me.Height = 220
+        Me.MinimumSize = New Size(420, 220)
 
         Dim lblNew As New Label() With {.Text = "New Password", .Left = 20, .Top = 30, .AutoSize = True}
         txtNewPassword.Left = 140
@@ -39,6 +40,10 @@ Public Class frmChangePassword
         btnLogout.Top = 110
         btnLogout.Width = 110
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleButton(btnSave, True)
+        UiStyleHelper.StyleButton(btnLogout)
 
         Me.Controls.Add(lblNew)
         Me.Controls.Add(txtNewPassword)

@@ -15,7 +15,8 @@ Public Class frmLogin
         Me.Text = "Login"
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 420
-        Me.Height = 230
+        Me.Height = 250
+        Me.MinimumSize = New Size(420, 250)
 
         Dim lblUsername As New Label() With {.Text = "Username", .Left = 25, .Top = 35, .AutoSize = True}
         txtUsername.Left = 120
@@ -32,7 +33,12 @@ Public Class frmLogin
         btnLogin.Left = 120
         btnLogin.Top = 115
         btnLogin.Width = 100
+        btnLogin.Height = 34
+        btnLogin.TextAlign = ContentAlignment.MiddleCenter
         AddHandler btnLogin.Click, AddressOf btnLogin_Click
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleButton(btnLogin, True)
 
         Me.Controls.Add(lblUsername)
         Me.Controls.Add(txtUsername)

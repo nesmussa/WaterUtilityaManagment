@@ -18,23 +18,27 @@ Public Class frmUserManagement
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 1050
         Me.Height = 620
+        Me.MinimumSize = New Size(920, 560)
 
         Dim lblSearch As New Label() With {.Text = "Search", .Left = 20, .Top = 22, .AutoSize = True}
         txtSearch.Left = 75
         txtSearch.Top = 18
         txtSearch.Width = 280
+        txtSearch.Anchor = AnchorStyles.Top Or AnchorStyles.Left
         AddHandler txtSearch.KeyDown, AddressOf txtSearch_KeyDown
 
         btnSearch.Text = "Search"
         btnSearch.Left = 365
         btnSearch.Top = 17
         btnSearch.Width = 85
+        btnSearch.Anchor = AnchorStyles.Top Or AnchorStyles.Left
         AddHandler btnSearch.Click, AddressOf btnSearch_Click
 
         dgvUsers.Left = 20
         dgvUsers.Top = 55
         dgvUsers.Width = 990
         dgvUsers.Height = 470
+        dgvUsers.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvUsers.AllowUserToAddRows = False
         dgvUsers.AllowUserToDeleteRows = False
         dgvUsers.ReadOnly = True
@@ -43,37 +47,51 @@ Public Class frmUserManagement
         dgvUsers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
         btnAddUser.Text = "Add Staff"
-        btnAddUser.Left = 20
-        btnAddUser.Top = 540
         btnAddUser.Width = 120
+        btnAddUser.Height = 32
         AddHandler btnAddUser.Click, AddressOf btnAddUser_Click
 
         btnResetPassword.Text = "Reset Password"
-        btnResetPassword.Left = 155
-        btnResetPassword.Top = 540
         btnResetPassword.Width = 140
+        btnResetPassword.Height = 32
         AddHandler btnResetPassword.Click, AddressOf btnResetPassword_Click
 
         btnToggleActive.Text = "Disable/Enable"
-        btnToggleActive.Left = 310
-        btnToggleActive.Top = 540
         btnToggleActive.Width = 140
+        btnToggleActive.Height = 32
         AddHandler btnToggleActive.Click, AddressOf btnToggleActive_Click
 
         btnLogout.Text = "Logout"
-        btnLogout.Left = 465
-        btnLogout.Top = 540
         btnLogout.Width = 120
+        btnLogout.Height = 32
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        Dim actionPanel As New FlowLayoutPanel()
+        actionPanel.Left = 20
+        actionPanel.Top = 535
+        actionPanel.Width = 640
+        actionPanel.Height = 40
+        actionPanel.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        actionPanel.FlowDirection = FlowDirection.LeftToRight
+        actionPanel.WrapContents = False
+        actionPanel.Controls.Add(btnAddUser)
+        actionPanel.Controls.Add(btnResetPassword)
+        actionPanel.Controls.Add(btnToggleActive)
+        actionPanel.Controls.Add(btnLogout)
+
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleDataGrid(dgvUsers)
+        UiStyleHelper.StyleButton(btnSearch, True)
+        UiStyleHelper.StyleButton(btnAddUser, True)
+        UiStyleHelper.StyleButton(btnResetPassword)
+        UiStyleHelper.StyleButton(btnToggleActive)
+        UiStyleHelper.StyleButton(btnLogout)
 
         Me.Controls.Add(lblSearch)
         Me.Controls.Add(txtSearch)
         Me.Controls.Add(btnSearch)
         Me.Controls.Add(dgvUsers)
-        Me.Controls.Add(btnAddUser)
-        Me.Controls.Add(btnResetPassword)
-        Me.Controls.Add(btnToggleActive)
-        Me.Controls.Add(btnLogout)
+        Me.Controls.Add(actionPanel)
 
         AddHandler Me.Load, AddressOf frmUserManagement_Load
     End Sub

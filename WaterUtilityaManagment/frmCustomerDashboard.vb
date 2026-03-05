@@ -6,6 +6,11 @@ Public Class frmCustomerDashboard
     Private ReadOnly lblWelcome As New Label()
     Private ReadOnly lblCurrentReading As New Label()
     Private ReadOnly lblLastReadingDate As New Label()
+    Private ReadOnly lblMeterNumber As New Label()
+    Private ReadOnly lblOutstandingBalance As New Label()
+    Private ReadOnly cboBillStatusFilter As New ComboBox()
+    Private ReadOnly dgvConsumption As New DataGridView()
+    Private ReadOnly lstNotifications As New ListBox()
     Private ReadOnly dgvBills As New DataGridView()
     Private ReadOnly dgvPayments As New DataGridView()
     Private ReadOnly btnChangePassword As New Button()
@@ -20,7 +25,8 @@ Public Class frmCustomerDashboard
         Me.Text = "Customer Dashboard"
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 1050
-        Me.Height = 680
+        Me.Height = 820
+        Me.MinimumSize = New Size(980, 760)
 
         lblWelcome.Left = 20
         lblWelcome.Top = 20
@@ -35,39 +41,89 @@ Public Class frmCustomerDashboard
         lblLastReadingDate.Top = 90
         lblLastReadingDate.AutoSize = True
 
+        lblMeterNumber.Left = 20
+        lblMeterNumber.Top = 120
+        lblMeterNumber.AutoSize = True
+        lblMeterNumber.Text = "Meter Number: -"
+
+        lblOutstandingBalance.Left = 20
+        lblOutstandingBalance.Top = 150
+        lblOutstandingBalance.AutoSize = True
+        lblOutstandingBalance.Font = New Font(lblOutstandingBalance.Font, FontStyle.Bold)
+        lblOutstandingBalance.Text = "Outstanding Balance: 0.00"
+
+        dgvConsumption.Left = 300
+        dgvConsumption.Top = 20
+        dgvConsumption.Width = 480
+        dgvConsumption.Height = 180
+        dgvConsumption.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        dgvConsumption.AllowUserToAddRows = False
+        dgvConsumption.AllowUserToDeleteRows = False
+        dgvConsumption.ReadOnly = True
+        dgvConsumption.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+
+        lstNotifications.Left = 300
+        lstNotifications.Top = 205
+        lstNotifications.Width = 480
+        lstNotifications.Height = 55
+        lstNotifications.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+
         btnChangePassword.Text = "Change Password"
-        btnChangePassword.Left = 800
+        btnChangePassword.Left = 820
         btnChangePassword.Top = 20
-        btnChangePassword.Width = 200
+        btnChangePassword.Width = 180
+        btnChangePassword.Anchor = AnchorStyles.Top Or AnchorStyles.Right
         AddHandler btnChangePassword.Click, AddressOf btnChangePassword_Click
 
         btnPayOnline.Text = "Pay Online"
-        btnPayOnline.Left = 800
+        btnPayOnline.Left = 820
         btnPayOnline.Top = 55
-        btnPayOnline.Width = 200
+        btnPayOnline.Width = 180
+        btnPayOnline.Anchor = AnchorStyles.Top Or AnchorStyles.Right
         AddHandler btnPayOnline.Click, AddressOf btnPayOnline_Click
 
         btnLogout.Text = "Logout"
-        btnLogout.Left = 800
+        btnLogout.Left = 820
         btnLogout.Top = 90
-        btnLogout.Width = 200
+        btnLogout.Width = 180
+        btnLogout.Anchor = AnchorStyles.Top Or AnchorStyles.Right
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
-        Dim lblBills As New Label() With {.Text = "Recent Bills", .Left = 20, .Top = 130, .AutoSize = True}
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleDataGrid(dgvConsumption)
+        UiStyleHelper.StyleDataGrid(dgvBills)
+        UiStyleHelper.StyleDataGrid(dgvPayments)
+        UiStyleHelper.StyleButton(btnChangePassword)
+        UiStyleHelper.StyleButton(btnPayOnline, True)
+        UiStyleHelper.StyleButton(btnLogout)
+
+        Dim lblBills As New Label() With {.Text = "Bills", .Left = 20, .Top = 300, .AutoSize = True}
+
+        Dim lblBillFilter As New Label() With {.Text = "Status", .Left = 90, .Top = 300, .AutoSize = True}
+        cboBillStatusFilter.Left = 140
+        cboBillStatusFilter.Top = 296
+        cboBillStatusFilter.Width = 150
+        cboBillStatusFilter.DropDownStyle = ComboBoxStyle.DropDownList
+        cboBillStatusFilter.Items.AddRange(New Object() {"All", "Unpaid", "Partial", "Paid"})
+        cboBillStatusFilter.SelectedIndex = 0
+        AddHandler cboBillStatusFilter.SelectedIndexChanged, AddressOf cboBillStatusFilter_SelectedIndexChanged
+
         dgvBills.Left = 20
-        dgvBills.Top = 155
+        dgvBills.Top = 325
         dgvBills.Width = 980
         dgvBills.Height = 220
+        dgvBills.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         dgvBills.AllowUserToAddRows = False
         dgvBills.AllowUserToDeleteRows = False
         dgvBills.ReadOnly = True
         dgvBills.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
-        Dim lblPayments As New Label() With {.Text = "Payments", .Left = 20, .Top = 390, .AutoSize = True}
+        Dim lblPayments As New Label() With {.Text = "Payments", .Left = 20, .Top = 560, .AutoSize = True}
         dgvPayments.Left = 20
-        dgvPayments.Top = 415
+        dgvPayments.Top = 585
         dgvPayments.Width = 980
-        dgvPayments.Height = 200
+        dgvPayments.Height = 180
+        dgvPayments.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvPayments.AllowUserToAddRows = False
         dgvPayments.AllowUserToDeleteRows = False
         dgvPayments.ReadOnly = True
@@ -76,10 +132,16 @@ Public Class frmCustomerDashboard
         Me.Controls.Add(lblWelcome)
         Me.Controls.Add(lblCurrentReading)
         Me.Controls.Add(lblLastReadingDate)
+        Me.Controls.Add(lblMeterNumber)
+        Me.Controls.Add(lblOutstandingBalance)
+        Me.Controls.Add(dgvConsumption)
+        Me.Controls.Add(lstNotifications)
         Me.Controls.Add(btnChangePassword)
         Me.Controls.Add(btnPayOnline)
         Me.Controls.Add(btnLogout)
         Me.Controls.Add(lblBills)
+        Me.Controls.Add(lblBillFilter)
+        Me.Controls.Add(cboBillStatusFilter)
         Me.Controls.Add(dgvBills)
         Me.Controls.Add(lblPayments)
         Me.Controls.Add(dgvPayments)
@@ -107,6 +169,9 @@ Public Class frmCustomerDashboard
             LoadWelcomeAndMeterInfo()
             LoadBills()
             LoadPayments()
+            LoadOutstandingBalance()
+            LoadConsumptionChart()
+            LoadNotifications()
         Catch ex As Exception
             MessageBox.Show("Failed to load dashboard: " & ex.Message,
                             "Error",
@@ -116,7 +181,7 @@ Public Class frmCustomerDashboard
     End Sub
 
     Private Sub LoadWelcomeAndMeterInfo()
-        Const sql As String = "SELECT u.full_name, c.last_reading, c.last_reading_date FROM users u LEFT JOIN customers c ON c.id = u.id WHERE u.id = @customer_id LIMIT 1;"
+        Const sql As String = "SELECT u.full_name, c.meter_number, c.last_reading, c.last_reading_date FROM users u LEFT JOIN customers c ON c.id = u.id WHERE u.id = @customer_id LIMIT 1;"
         Dim parameters As New Dictionary(Of String, Object) From {
             {"@customer_id", CurrentUser.UserId}
         }
@@ -126,12 +191,14 @@ Public Class frmCustomerDashboard
             lblWelcome.Text = "Welcome"
             lblCurrentReading.Text = "Current Meter Reading: -"
             lblLastReadingDate.Text = "Last Reading Date: -"
+            lblMeterNumber.Text = "Meter Number: -"
             Return
         End If
 
         Dim row As DataRow = data.Rows(0)
         Dim fullName As String = row("full_name").ToString()
         lblWelcome.Text = $"Welcome, {fullName}"
+        lblMeterNumber.Text = $"Meter Number: {If(row("meter_number") Is DBNull.Value, "-", row("meter_number").ToString())}"
 
         Dim currentReading As Decimal = Convert.ToDecimal(If(row("last_reading") Is DBNull.Value, 0D, row("last_reading")))
         lblCurrentReading.Text = $"Current Meter Reading: {currentReading:N2}"
@@ -145,11 +212,22 @@ Public Class frmCustomerDashboard
     End Sub
 
     Private Sub LoadBills()
-        Const sql As String = "SELECT bill_date, due_date, total_amount, status FROM bills WHERE customer_id = @customer_id ORDER BY bill_date DESC LIMIT 20;"
+        Dim statusFilter As String = cboBillStatusFilter.Text
+        Const sql As String = "SELECT bill_date, due_date, total_amount, status FROM bills WHERE customer_id = @customer_id AND (@status_filter = 'All' OR status = @status_filter) ORDER BY bill_date DESC LIMIT 20;"
+        Dim parameters As New Dictionary(Of String, Object) From {
+            {"@customer_id", CurrentUser.UserId},
+            {"@status_filter", statusFilter}
+        }
+        dgvBills.DataSource = DatabaseHelper.ExecuteDataTable(sql, parameters)
+    End Sub
+
+    Private Sub LoadOutstandingBalance()
+        Const sql As String = "SELECT COALESCE(SUM(b.total_amount - COALESCE(pa.paid_total, 0)), 0) FROM bills b LEFT JOIN (SELECT bill_id, SUM(amount_applied) AS paid_total FROM payment_allocations GROUP BY bill_id) pa ON pa.bill_id = b.id WHERE b.customer_id = @customer_id AND b.status IN ('Unpaid', 'Partial');"
         Dim parameters As New Dictionary(Of String, Object) From {
             {"@customer_id", CurrentUser.UserId}
         }
-        dgvBills.DataSource = DatabaseHelper.ExecuteDataTable(sql, parameters)
+        Dim outstanding As Decimal = Convert.ToDecimal(DatabaseHelper.ExecuteScalar(sql, parameters))
+        lblOutstandingBalance.Text = $"Outstanding Balance: {outstanding:N2}"
     End Sub
 
     Private Sub LoadPayments()
@@ -158,6 +236,39 @@ Public Class frmCustomerDashboard
             {"@customer_id", CurrentUser.UserId}
         }
         dgvPayments.DataSource = DatabaseHelper.ExecuteDataTable(sql, parameters)
+    End Sub
+
+    Private Sub LoadConsumptionChart()
+        Const sql As String = "SELECT DATE_FORMAT(reading_date, '%Y-%m') AS reading_month, COALESCE(SUM(consumption), 0) AS total_consumption FROM meter_readings WHERE customer_id = @customer_id AND reading_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) GROUP BY DATE_FORMAT(reading_date, '%Y-%m') ORDER BY reading_month;"
+        Dim parameters As New Dictionary(Of String, Object) From {
+            {"@customer_id", CurrentUser.UserId}
+        }
+
+        dgvConsumption.DataSource = DatabaseHelper.ExecuteDataTable(sql, parameters)
+    End Sub
+
+    Private Sub LoadNotifications()
+        lstNotifications.Items.Clear()
+
+        Const dueSql As String = "SELECT COUNT(*) FROM bills WHERE customer_id = @customer_id AND status IN ('Unpaid', 'Partial') AND due_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY);"
+        Dim dueSoon As Integer = Convert.ToInt32(DatabaseHelper.ExecuteScalar(dueSql, New Dictionary(Of String, Object) From {
+            {"@customer_id", CurrentUser.UserId}
+        }))
+
+        If dueSoon > 0 Then
+            lstNotifications.Items.Add($"Reminder: {dueSoon} bill(s) are due within 7 days.")
+        End If
+
+        Const paymentSql As String = "SELECT payment_date, amount_paid FROM payments WHERE customer_id = @customer_id ORDER BY payment_date DESC LIMIT 1;"
+        Dim paymentDt As DataTable = DatabaseHelper.ExecuteDataTable(paymentSql, New Dictionary(Of String, Object) From {
+            {"@customer_id", CurrentUser.UserId}
+        })
+        If paymentDt.Rows.Count > 0 Then
+            Dim row As DataRow = paymentDt.Rows(0)
+            lstNotifications.Items.Add($"Last payment: {Convert.ToDateTime(row("payment_date")):yyyy-MM-dd} - {Convert.ToDecimal(row("amount_paid")):N2}")
+        End If
+
+        lstNotifications.Items.Add("System announcement: Keep your contact details up to date.")
     End Sub
 
     Private Sub btnChangePassword_Click(sender As Object, e As EventArgs)
@@ -217,8 +328,15 @@ Public Class frmCustomerDashboard
             If frm.ShowDialog() = DialogResult.OK Then
                 LoadBills()
                 LoadPayments()
+                LoadOutstandingBalance()
+                LoadConsumptionChart()
+                LoadNotifications()
             End If
         End Using
+    End Sub
+
+    Private Sub cboBillStatusFilter_SelectedIndexChanged(sender As Object, e As EventArgs)
+        LoadBills()
     End Sub
 
     Private Sub btnLogout_Click(sender As Object, e As EventArgs)

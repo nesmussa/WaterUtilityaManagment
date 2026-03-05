@@ -18,7 +18,8 @@ Public Class frmStaffActivity
         dgvActivity.AllowUserToAddRows = False
         dgvActivity.AllowUserToDeleteRows = False
         dgvActivity.ReadOnly = True
-        dgvActivity.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvActivity.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells
+        dgvActivity.ScrollBars = ScrollBars.Both
 
         UiStyleHelper.StyleForm(Me)
         UiStyleHelper.StyleDataGrid(dgvActivity)

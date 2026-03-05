@@ -50,6 +50,7 @@ Public Class frmTariffs
         btnLogout.Text = "Logout"
         btnLogout.Width = 120
         btnLogout.Height = 32
+        btnLogout.Visible = False
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
         Dim actionPanel As New FlowLayoutPanel()

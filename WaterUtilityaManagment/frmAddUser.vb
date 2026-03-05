@@ -93,6 +93,7 @@ Public Class frmAddUser
         btnLogout.Left = 145
         btnLogout.Top = 265
         btnLogout.Width = 85
+        btnLogout.Visible = False
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
         UiStyleHelper.StyleForm(Me)

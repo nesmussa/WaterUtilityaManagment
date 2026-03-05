@@ -87,6 +87,7 @@ Public Class frmTariffEdit
         btnLogout.Left = 40
         btnLogout.Top = 165
         btnLogout.Width = 90
+        btnLogout.Visible = False
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
         UiStyleHelper.StyleForm(Me)

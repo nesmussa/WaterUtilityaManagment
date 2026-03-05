@@ -39,7 +39,10 @@ Public Class frmChangePassword
         btnLogout.Left = 270
         btnLogout.Top = 110
         btnLogout.Width = 110
+        btnLogout.Visible = False
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        btnSave.Text = "Change Password"
 
         UiStyleHelper.StyleForm(Me)
         UiStyleHelper.StyleButton(btnSave, True)

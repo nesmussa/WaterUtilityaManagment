@@ -58,6 +58,7 @@ Public Class frmOnlinePayment
         btnLogout.Top = 333
         btnLogout.Width = 120
         btnLogout.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        btnLogout.Visible = False
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
         UiStyleHelper.StyleForm(Me)

@@ -28,33 +28,23 @@ Public Class frmCustomerDashboard
         Me.Height = 820
         Me.MinimumSize = New Size(980, 760)
 
-        lblWelcome.Left = 20
-        lblWelcome.Top = 20
         lblWelcome.AutoSize = True
         lblWelcome.Font = New Font(lblWelcome.Font, FontStyle.Bold)
 
-        lblCurrentReading.Left = 20
-        lblCurrentReading.Top = 60
         lblCurrentReading.AutoSize = True
 
-        lblLastReadingDate.Left = 20
-        lblLastReadingDate.Top = 90
         lblLastReadingDate.AutoSize = True
 
-        lblMeterNumber.Left = 20
-        lblMeterNumber.Top = 120
         lblMeterNumber.AutoSize = True
         lblMeterNumber.Text = "Meter Number: -"
 
-        lblOutstandingBalance.Left = 20
-        lblOutstandingBalance.Top = 150
         lblOutstandingBalance.AutoSize = True
         lblOutstandingBalance.Font = New Font(lblOutstandingBalance.Font, FontStyle.Bold)
         lblOutstandingBalance.Text = "Outstanding Balance: 0.00"
 
-        dgvConsumption.Left = 300
-        dgvConsumption.Top = 20
-        dgvConsumption.Width = 480
+        dgvConsumption.Left = 0
+        dgvConsumption.Top = 0
+        dgvConsumption.Width = 450
         dgvConsumption.Height = 180
         dgvConsumption.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         dgvConsumption.AllowUserToAddRows = False
@@ -62,32 +52,57 @@ Public Class frmCustomerDashboard
         dgvConsumption.ReadOnly = True
         dgvConsumption.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
-        lstNotifications.Left = 300
-        lstNotifications.Top = 205
-        lstNotifications.Width = 480
+        lstNotifications.Left = 0
+        lstNotifications.Top = 185
+        lstNotifications.Width = 450
         lstNotifications.Height = 55
         lstNotifications.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         btnChangePassword.Text = "Change Password"
-        btnChangePassword.Left = 820
-        btnChangePassword.Top = 20
-        btnChangePassword.Width = 180
-        btnChangePassword.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnChangePassword.Width = 170
         AddHandler btnChangePassword.Click, AddressOf btnChangePassword_Click
 
         btnPayOnline.Text = "Pay Online"
-        btnPayOnline.Left = 820
-        btnPayOnline.Top = 55
-        btnPayOnline.Width = 180
-        btnPayOnline.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnPayOnline.Width = 170
         AddHandler btnPayOnline.Click, AddressOf btnPayOnline_Click
 
         btnLogout.Text = "Logout"
-        btnLogout.Left = 820
-        btnLogout.Top = 90
-        btnLogout.Width = 180
-        btnLogout.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnLogout.Width = 170
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        Dim infoPanel As New FlowLayoutPanel()
+        infoPanel.Left = 20
+        infoPanel.Top = 20
+        infoPanel.Width = 260
+        infoPanel.Height = 210
+        infoPanel.FlowDirection = FlowDirection.TopDown
+        infoPanel.WrapContents = False
+        infoPanel.Controls.Add(lblWelcome)
+        infoPanel.Controls.Add(lblCurrentReading)
+        infoPanel.Controls.Add(lblLastReadingDate)
+        infoPanel.Controls.Add(lblMeterNumber)
+        infoPanel.Controls.Add(lblOutstandingBalance)
+
+        Dim centerPanel As New Panel()
+        centerPanel.Left = 290
+        centerPanel.Top = 20
+        centerPanel.Width = 460
+        centerPanel.Height = 245
+        centerPanel.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        centerPanel.Controls.Add(dgvConsumption)
+        centerPanel.Controls.Add(lstNotifications)
+
+        Dim actionsPanel As New FlowLayoutPanel()
+        actionsPanel.Left = 760
+        actionsPanel.Top = 20
+        actionsPanel.Width = 230
+        actionsPanel.Height = 130
+        actionsPanel.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        actionsPanel.FlowDirection = FlowDirection.TopDown
+        actionsPanel.WrapContents = False
+        actionsPanel.Controls.Add(btnChangePassword)
+        actionsPanel.Controls.Add(btnPayOnline)
+        actionsPanel.Controls.Add(btnLogout)
 
         UiStyleHelper.StyleForm(Me)
         UiStyleHelper.StyleDataGrid(dgvConsumption)
@@ -97,11 +112,11 @@ Public Class frmCustomerDashboard
         UiStyleHelper.StyleButton(btnPayOnline, True)
         UiStyleHelper.StyleButton(btnLogout)
 
-        Dim lblBills As New Label() With {.Text = "Bills", .Left = 20, .Top = 300, .AutoSize = True}
+        Dim lblBills As New Label() With {.Text = "Bills", .Left = 20, .Top = 280, .AutoSize = True}
 
-        Dim lblBillFilter As New Label() With {.Text = "Status", .Left = 90, .Top = 300, .AutoSize = True}
+        Dim lblBillFilter As New Label() With {.Text = "Status", .Left = 90, .Top = 280, .AutoSize = True}
         cboBillStatusFilter.Left = 140
-        cboBillStatusFilter.Top = 296
+        cboBillStatusFilter.Top = 276
         cboBillStatusFilter.Width = 150
         cboBillStatusFilter.DropDownStyle = ComboBoxStyle.DropDownList
         cboBillStatusFilter.Items.AddRange(New Object() {"All", "Unpaid", "Partial", "Paid"})
@@ -109,7 +124,7 @@ Public Class frmCustomerDashboard
         AddHandler cboBillStatusFilter.SelectedIndexChanged, AddressOf cboBillStatusFilter_SelectedIndexChanged
 
         dgvBills.Left = 20
-        dgvBills.Top = 325
+        dgvBills.Top = 305
         dgvBills.Width = 980
         dgvBills.Height = 220
         dgvBills.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
@@ -118,27 +133,20 @@ Public Class frmCustomerDashboard
         dgvBills.ReadOnly = True
         dgvBills.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
-        Dim lblPayments As New Label() With {.Text = "Payments", .Left = 20, .Top = 560, .AutoSize = True}
+        Dim lblPayments As New Label() With {.Text = "Payments", .Left = 20, .Top = 540, .AutoSize = True}
         dgvPayments.Left = 20
-        dgvPayments.Top = 585
+        dgvPayments.Top = 565
         dgvPayments.Width = 980
-        dgvPayments.Height = 180
+        dgvPayments.Height = 200
         dgvPayments.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvPayments.AllowUserToAddRows = False
         dgvPayments.AllowUserToDeleteRows = False
         dgvPayments.ReadOnly = True
         dgvPayments.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
-        Me.Controls.Add(lblWelcome)
-        Me.Controls.Add(lblCurrentReading)
-        Me.Controls.Add(lblLastReadingDate)
-        Me.Controls.Add(lblMeterNumber)
-        Me.Controls.Add(lblOutstandingBalance)
-        Me.Controls.Add(dgvConsumption)
-        Me.Controls.Add(lstNotifications)
-        Me.Controls.Add(btnChangePassword)
-        Me.Controls.Add(btnPayOnline)
-        Me.Controls.Add(btnLogout)
+        Me.Controls.Add(infoPanel)
+        Me.Controls.Add(centerPanel)
+        Me.Controls.Add(actionsPanel)
         Me.Controls.Add(lblBills)
         Me.Controls.Add(lblBillFilter)
         Me.Controls.Add(cboBillStatusFilter)

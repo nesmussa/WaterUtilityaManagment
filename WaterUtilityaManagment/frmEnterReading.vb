@@ -30,39 +30,44 @@ Public Class frmEnterReading
         Me.Text = "Enter Meter Reading"
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 700
-        Me.Height = 390
-        Me.MinimumSize = New Size(680, 380)
+        Me.Height = 455
+        Me.MinimumSize = New Size(700, 430)
 
-        Dim lblCustomer As New Label() With {.Text = "Customer", .Left = 30, .Top = 30, .AutoSize = True}
-        cboCustomer.Left = 190
-        cboCustomer.Top = 25
+        Dim labelLeft As Integer = 30
+        Dim fieldLeft As Integer = 210
+        Dim row1Top As Integer = 28
+        Dim rowGap As Integer = 44
+
+        Dim lblCustomer As New Label() With {.Text = "Customer", .Left = labelLeft, .Top = row1Top + 4, .AutoSize = True}
+        cboCustomer.Left = fieldLeft
+        cboCustomer.Top = row1Top
         cboCustomer.Width = 320
         cboCustomer.DropDownStyle = ComboBoxStyle.DropDown
         cboCustomer.AutoCompleteMode = AutoCompleteMode.SuggestAppend
         cboCustomer.AutoCompleteSource = AutoCompleteSource.ListItems
         AddHandler cboCustomer.SelectedIndexChanged, AddressOf cboCustomer_SelectedIndexChanged
 
-        Dim lblNewReading As New Label() With {.Text = "New Reading", .Left = 30, .Top = 75, .AutoSize = True}
-        txtNewReading.Left = 190
-        txtNewReading.Top = 70
+        Dim lblNewReading As New Label() With {.Text = "New Reading", .Left = labelLeft, .Top = row1Top + rowGap + 4, .AutoSize = True}
+        txtNewReading.Left = fieldLeft
+        txtNewReading.Top = row1Top + rowGap
         txtNewReading.Width = 320
 
-        Dim lblReadingDate As New Label() With {.Text = "Reading Date", .Left = 30, .Top = 120, .AutoSize = True}
-        dtpReadingDate.Left = 190
-        dtpReadingDate.Top = 115
+        Dim lblReadingDate As New Label() With {.Text = "Reading Date", .Left = labelLeft, .Top = row1Top + (rowGap * 2) + 4, .AutoSize = True}
+        dtpReadingDate.Left = fieldLeft
+        dtpReadingDate.Top = row1Top + (rowGap * 2)
         dtpReadingDate.Width = 320
         dtpReadingDate.Format = DateTimePickerFormat.[Short]
         dtpReadingDate.Value = Date.Today
 
-        Dim lblLastReadingTitle As New Label() With {.Text = "Last Reading", .Left = 30, .Top = 165, .AutoSize = True}
-        lblLastReadingValue.Left = 190
-        lblLastReadingValue.Top = 165
+        Dim lblLastReadingTitle As New Label() With {.Text = "Last Reading", .Left = labelLeft, .Top = row1Top + (rowGap * 3) + 4, .AutoSize = True}
+        lblLastReadingValue.Left = fieldLeft
+        lblLastReadingValue.Top = row1Top + (rowGap * 3) + 4
         lblLastReadingValue.AutoSize = True
         lblLastReadingValue.Text = "-"
 
-        Dim lblLastReadingDateTitle As New Label() With {.Text = "Last Reading Date", .Left = 30, .Top = 195, .AutoSize = True}
-        lblLastReadingDate.Left = 190
-        lblLastReadingDate.Top = 195
+        Dim lblLastReadingDateTitle As New Label() With {.Text = "Last Reading Date", .Left = labelLeft, .Top = row1Top + (rowGap * 4) - 8, .AutoSize = True}
+        lblLastReadingDate.Left = fieldLeft
+        lblLastReadingDate.Top = row1Top + (rowGap * 4) - 8
         lblLastReadingDate.AutoSize = True
         lblLastReadingDate.Text = "-"
 
@@ -100,7 +105,7 @@ Public Class frmEnterReading
         actionPanel.Left = 190
         actionPanel.Top = 232
         actionPanel.Width = 480
-        actionPanel.Height = 72
+        actionPanel.Height = 110
         actionPanel.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Bottom
         actionPanel.FlowDirection = FlowDirection.LeftToRight
         actionPanel.WrapContents = True
@@ -122,14 +127,14 @@ Public Class frmEnterReading
         UiStyleHelper.StyleButton(btnLogout)
 
         lblTodayCollections.Left = 190
-        lblTodayCollections.Top = 315
+        lblTodayCollections.Top = 365
         lblTodayCollections.AutoSize = True
         lblTodayCollections.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         lblTodayCollections.Text = "Today's Collections: 0.00"
 
         btnLogout.Text = "Logout"
         btnLogout.Left = 590
-        btnLogout.Top = 310
+        btnLogout.Top = 360
         btnLogout.Width = 80
         btnLogout.Height = 32
         btnLogout.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom

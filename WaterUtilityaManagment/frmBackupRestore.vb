@@ -34,6 +34,7 @@ Public Class frmBackupRestore
         btnLogout.Left = 110
         btnLogout.Top = 90
         btnLogout.Width = 140
+        btnLogout.Visible = False
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
         UiStyleHelper.StyleForm(Me)

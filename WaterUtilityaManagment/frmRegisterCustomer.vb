@@ -48,6 +48,8 @@ Public Class frmRegisterCustomer
         txtMeterNumber.Left = 220
         txtMeterNumber.Top = 185
         txtMeterNumber.Width = 260
+        txtMeterNumber.ReadOnly = True
+        txtMeterNumber.BackColor = Color.WhiteSmoke
 
         Dim lblInstallationDate As New Label() With {.Text = "Installation Date", .Left = 30, .Top = 230, .AutoSize = True}
         dtpInstallationDate.Left = 220
@@ -70,6 +72,7 @@ Public Class frmRegisterCustomer
         btnLogout.Left = 360
         btnLogout.Top = 320
         btnLogout.Width = 120
+        btnLogout.Visible = False
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
         UiStyleHelper.StyleForm(Me)
@@ -109,6 +112,8 @@ Public Class frmRegisterCustomer
                             MessageBoxIcon.Warning)
             Me.Close()
         End If
+
+        txtMeterNumber.Text = GenerateNextMeterNumber()
     End Sub
 
     Private Sub btnRegister_Click(sender As Object, e As EventArgs)
@@ -125,10 +130,14 @@ Public Class frmRegisterCustomer
                String.IsNullOrWhiteSpace(address) OrElse
                String.IsNullOrWhiteSpace(phone) OrElse
                String.IsNullOrWhiteSpace(email) OrElse
-               String.IsNullOrWhiteSpace(meterNumber) OrElse
                String.IsNullOrWhiteSpace(txtInitialMeterReading.Text) Then
                 MessageBox.Show("Please complete all fields.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Return
+            End If
+
+            If String.IsNullOrWhiteSpace(meterNumber) Then
+                meterNumber = GenerateNextMeterNumber()
+                txtMeterNumber.Text = meterNumber
             End If
 
             If Not Decimal.TryParse(txtInitialMeterReading.Text.Trim(), initialReading) OrElse initialReading < 0D Then
@@ -287,8 +296,15 @@ Public Class frmRegisterCustomer
         txtAddress.Clear()
         txtPhone.Clear()
         txtEmail.Clear()
-        txtMeterNumber.Clear()
+        txtMeterNumber.Text = GenerateNextMeterNumber()
         txtInitialMeterReading.Clear()
         dtpInstallationDate.Value = Date.Today
     End Sub
+
+    Private Shared Function GenerateNextMeterNumber() As String
+        Const sql As String = "SELECT COALESCE(MAX(CAST(SUBSTRING(meter_number, 4) AS UNSIGNED)), 0) FROM customers WHERE meter_number REGEXP '^MTR[0-9]+$';"
+        Dim obj As Object = DatabaseHelper.ExecuteScalar(sql)
+        Dim nextNumber As Integer = If(obj Is Nothing OrElse obj Is DBNull.Value, 1, Convert.ToInt32(obj) + 1)
+        Return $"MTR{nextNumber:0000}"
+    End Function
 End Class

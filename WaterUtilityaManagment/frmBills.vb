@@ -16,8 +16,8 @@ Public Class frmBills
         Me.Text = "Bills"
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.Width = 960
-        Me.Height = 580
-        Me.MinimumSize = New Size(860, 500)
+        Me.Height = 640
+        Me.MinimumSize = New Size(900, 600)
 
         Dim lblSearch As New Label() With {
             .Text = "Search (name/meter)",
@@ -55,16 +55,11 @@ Public Class frmBills
         AddHandler dgvBills.CellDoubleClick, AddressOf dgvBills_CellDoubleClick
         AddHandler dgvBills.KeyDown, AddressOf dgvBills_KeyDown
 
-        btnLogout.Text = "Logout"
-        btnLogout.Left = 800
-        btnLogout.Top = 515
-        btnLogout.Width = 120
-        btnLogout.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
-        AddHandler btnLogout.Click, AddressOf btnLogout_Click
+        btnLogout.Visible = False
 
         btnProcessPayment.Text = "Process Payment"
-        btnProcessPayment.Left = 660
-        btnProcessPayment.Top = 515
+        btnProcessPayment.Left = 790
+        btnProcessPayment.Top = 560
         btnProcessPayment.Width = 130
         btnProcessPayment.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
         AddHandler btnProcessPayment.Click, AddressOf btnProcessPayment_Click

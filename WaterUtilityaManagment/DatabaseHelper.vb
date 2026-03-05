@@ -74,14 +74,51 @@ Public NotInheritable Class DatabaseHelper
     End Sub
 
     Public Shared Sub EnsureAuditLogTable()
-        Const sql As String = "CREATE TABLE IF NOT EXISTS audit_log (audit_id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NULL, action_name VARCHAR(100) NOT NULL, details TEXT NULL, action_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);"
+        Const sql As String = "CREATE TABLE IF NOT EXISTS audit_log (audit_id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NULL, action_name VARCHAR(100) NULL, action VARCHAR(255) NULL, table_name VARCHAR(50) NULL, record_id INT NULL, details TEXT NULL, ip_address VARCHAR(45) NULL, action_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP, action_date DATETIME NULL DEFAULT CURRENT_TIMESTAMP);"
         ExecuteNonQuery(sql)
+    End Sub
+
+    Public Shared Sub EnsureAuditLogCompatibilityColumns()
+        EnsureColumnExists("audit_log", "action_name", "VARCHAR(100) NULL")
+        EnsureColumnExists("audit_log", "action", "VARCHAR(255) NULL")
+        EnsureColumnExists("audit_log", "table_name", "VARCHAR(50) NULL")
+        EnsureColumnExists("audit_log", "record_id", "INT NULL")
+        EnsureColumnExists("audit_log", "ip_address", "VARCHAR(45) NULL")
+        EnsureColumnExists("audit_log", "action_time", "DATETIME NULL DEFAULT CURRENT_TIMESTAMP")
+        EnsureColumnExists("audit_log", "action_date", "DATETIME NULL DEFAULT CURRENT_TIMESTAMP")
+
+        EnsureColumnDefinition("audit_log", "action_name", "VARCHAR(100) NULL DEFAULT NULL")
+        EnsureColumnDefinition("audit_log", "action_time", "DATETIME NULL DEFAULT CURRENT_TIMESTAMP")
+        EnsureColumnDefinition("audit_log", "action_date", "DATETIME NULL DEFAULT CURRENT_TIMESTAMP")
     End Sub
 
     Public Shared Sub EnsureCoreSchema()
         EnsureUsersIsActiveColumn()
         EnsureUsersForcePasswordChangeColumn()
         EnsureAuditLogTable()
+        EnsureAuditLogCompatibilityColumns()
+    End Sub
+
+    Private Shared Sub EnsureColumnExists(tableName As String, columnName As String, columnDefinition As String)
+        Try
+            Dim sql As String = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};"
+            ExecuteNonQuery(sql)
+        Catch ex As MySqlException
+            If ex.Number <> 1060 Then
+                Throw
+            End If
+        End Try
+    End Sub
+
+    Private Shared Sub EnsureColumnDefinition(tableName As String, columnName As String, columnDefinition As String)
+        Try
+            Dim sql As String = $"ALTER TABLE {tableName} MODIFY COLUMN {columnName} {columnDefinition};"
+            ExecuteNonQuery(sql)
+        Catch ex As MySqlException
+            If ex.Number <> 1054 Then
+                Throw
+            End If
+        End Try
     End Sub
 
     Public Shared Function GetConnectionString() As String

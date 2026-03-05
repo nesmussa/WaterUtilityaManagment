@@ -26,17 +26,12 @@ Public Class frmPayment
         Me.Height = 620
         Me.MinimumSize = New Size(900, 580)
 
-        Dim lblCustomerId As New Label() With {.Text = "Customer ID", .Left = 20, .Top = 20, .AutoSize = True}
-        txtCustomerId.Left = 120
-        txtCustomerId.Top = 15
-        txtCustomerId.Width = 120
-        txtCustomerId.Anchor = AnchorStyles.Top Or AnchorStyles.Left
-        AddHandler txtCustomerId.Leave, AddressOf txtCustomerId_Leave
+        txtCustomerId.Visible = False
 
-        Dim lblCustomer As New Label() With {.Text = "Select Customer", .Left = 270, .Top = 20, .AutoSize = True}
-        cboCustomer.Left = 380
+        Dim lblCustomer As New Label() With {.Text = "Select Customer", .Left = 20, .Top = 20, .AutoSize = True}
+        cboCustomer.Left = 130
         cboCustomer.Top = 15
-        cboCustomer.Width = 530
+        cboCustomer.Width = 780
         cboCustomer.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         cboCustomer.DropDownStyle = ComboBoxStyle.DropDown
         cboCustomer.AutoCompleteMode = AutoCompleteMode.SuggestAppend
@@ -100,48 +95,41 @@ Public Class frmPayment
         AddHandler dgvBills.CurrentCellDirtyStateChanged, AddressOf dgvBills_CurrentCellDirtyStateChanged
         AddHandler dgvBills.CellValueChanged, AddressOf dgvBills_CellValueChanged
 
-        Dim lblAmountPaid As New Label() With {.Text = "Amount Paid", .Left = 20, .Top = 465, .AutoSize = True}
+        Dim lblAmountPaid As New Label() With {.Text = "Amount Paid", .Left = 20, .Top = 440, .AutoSize = True}
         txtAmountPaid.Left = 120
-        txtAmountPaid.Top = 460
+        txtAmountPaid.Top = 458
         txtAmountPaid.Width = 150
         txtAmountPaid.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
 
-        Dim lblPaymentMode As New Label() With {.Text = "Payment Mode", .Left = 300, .Top = 465, .AutoSize = True}
+        Dim lblPaymentMode As New Label() With {.Text = "Payment Mode", .Left = 300, .Top = 440, .AutoSize = True}
         cboPaymentMode.Left = 400
-        cboPaymentMode.Top = 460
+        cboPaymentMode.Top = 458
         cboPaymentMode.Width = 180
         cboPaymentMode.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         cboPaymentMode.DropDownStyle = ComboBoxStyle.DropDownList
         cboPaymentMode.Items.AddRange(New Object() {"Cash", "Bank Transfer", "Mobile Money", "Online"})
         cboPaymentMode.SelectedIndex = 0
 
-        Dim lblReference As New Label() With {.Text = "Reference", .Left = 610, .Top = 465, .AutoSize = True}
+        Dim lblReference As New Label() With {.Text = "Reference", .Left = 610, .Top = 440, .AutoSize = True}
         txtReference.Left = 680
-        txtReference.Top = 460
+        txtReference.Top = 458
         txtReference.Width = 230
         txtReference.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
 
         btnProcessPayment.Text = "Process Payment"
         btnProcessPayment.Left = 120
-        btnProcessPayment.Top = 510
+        btnProcessPayment.Top = 505
         btnProcessPayment.Width = 180
         btnProcessPayment.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         AddHandler btnProcessPayment.Click, AddressOf btnProcessPayment_Click
 
-        btnLogout.Text = "Logout"
-        btnLogout.Left = 320
-        btnLogout.Top = 510
-        btnLogout.Width = 120
-        btnLogout.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
-        AddHandler btnLogout.Click, AddressOf btnLogout_Click
+        btnLogout.Visible = False
 
         UiStyleHelper.StyleForm(Me)
         UiStyleHelper.StyleDataGrid(dgvBills)
         UiStyleHelper.StyleButton(btnProcessPayment, True)
         UiStyleHelper.StyleButton(btnLogout)
 
-        Me.Controls.Add(lblCustomerId)
-        Me.Controls.Add(txtCustomerId)
         Me.Controls.Add(lblCustomer)
         Me.Controls.Add(cboCustomer)
         Me.Controls.Add(lblNameTitle)
@@ -213,28 +201,6 @@ Public Class frmPayment
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error)
         End Try
-    End Sub
-
-    Private Sub txtCustomerId_Leave(sender As Object, e As EventArgs)
-        If String.IsNullOrWhiteSpace(txtCustomerId.Text) Then
-            Return
-        End If
-
-        Dim customerId As Integer
-        If Not Integer.TryParse(txtCustomerId.Text.Trim(), customerId) Then
-            MessageBox.Show("Customer ID must be numeric.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Return
-        End If
-
-        For i As Integer = 0 To cboCustomer.Items.Count - 1
-            Dim item As CustomerItem = TryCast(cboCustomer.Items(i), CustomerItem)
-            If item IsNot Nothing AndAlso item.CustomerId = customerId Then
-                cboCustomer.SelectedIndex = i
-                Return
-            End If
-        Next
-
-        MessageBox.Show("Customer not found.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
     End Sub
 
     Private Sub cboCustomer_SelectedIndexChanged(sender As Object, e As EventArgs)

@@ -52,72 +52,46 @@ Public Class frmAddUser
     Private Sub InitializeComponent()
         Me.Text = If(_isEditMode, "Edit User", "Add New User")
         Me.StartPosition = FormStartPosition.CenterScreen
-        Me.ClientSize = New Size(1200, 800)
-        Me.MinimumSize = New Size(900, 600)
-        Me.WindowState = FormWindowState.Maximized
+        Me.Width = 550
+        Me.Height = 500
+        Me.MinimumSize = New Size(550, 500)
         Me.FormBorderStyle = FormBorderStyle.Sizable
-        Me.MaximizeBox = True
-        Me.MinimizeBox = True
-        Me.ShowInTaskbar = True
-        Me.BackColor = Color.White
-        Me.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular)
 
-        Dim headerPanel As New Panel() With {
-            .Dock = DockStyle.Top,
-            .Height = 52,
-            .BackColor = ColorTranslator.FromHtml("#3498db")
-        }
-        Dim lblHeader As New Label() With {
-            .Dock = DockStyle.Fill,
-            .Text = If(_isEditMode, "Edit User", "Add New User"),
-            .TextAlign = ContentAlignment.MiddleCenter,
-            .Font = New Font("Segoe UI", 14.0F, FontStyle.Bold),
-            .ForeColor = Color.White
-        }
-        headerPanel.Controls.Add(lblHeader)
+        Dim lblUsername As New Label() With {.Text = "Username", .Left = 30, .Top = 30, .AutoSize = True}
+        txtUsername.Left = 220
+        txtUsername.Top = 25
+        txtUsername.Width = 260
 
-        Dim contentGrid As New TableLayoutPanel() With {
-            .Left = 22,
-            .Top = 68,
-            .Width = 406,
-            .Height = 244,
-            .ColumnCount = 2,
-            .RowCount = 7
-        }
-        contentGrid.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 35.0F))
-        contentGrid.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 65.0F))
-        For i As Integer = 0 To 6
-            contentGrid.RowStyles.Add(New RowStyle(SizeType.Absolute, 34.0F))
-        Next
-
-        Dim lblUsername As New Label() With {.Text = "Username", .AutoSize = True, .Anchor = AnchorStyles.Right, .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)}
-        txtUsername.Dock = DockStyle.Fill
-
-        Dim lblPassword As New Label() With {.Text = "Password", .AutoSize = True, .Anchor = AnchorStyles.Right, .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)}
-        Dim passwordPanel As New Panel() With {.Dock = DockStyle.Fill}
+        Dim lblPassword As New Label() With {.Text = If(_isEditMode, "Password (optional)", "Password"), .Left = 30, .Top = 70, .AutoSize = True}
+        Dim passwordPanel As New Panel() With {.Left = 220, .Top = 65, .Width = 260, .Height = 28}
         txtPassword.Left = 0
         txtPassword.Top = 2
-        txtPassword.Width = 232
+        txtPassword.Width = 224
         txtPassword.UseSystemPasswordChar = True
-        If _isEditMode Then
-            lblPassword.Text = "Password (optional)"
-        End If
 
         btnTogglePassword.Text = "👁"
         btnTogglePassword.Width = 32
-        btnTogglePassword.Height = 28
-        btnTogglePassword.Left = 236
+        btnTogglePassword.Height = 24
+        btnTogglePassword.Left = 228
         btnTogglePassword.Top = 2
         btnTogglePassword.FlatStyle = FlatStyle.Flat
         btnTogglePassword.FlatAppearance.BorderSize = 0
         btnTogglePassword.BackColor = ColorTranslator.FromHtml("#ecf0f1")
-        AddHandler btnTogglePassword.Click, AddressOf btnTogglePassword_Click
-        AddHandler txtPassword.TextChanged, AddressOf txtPassword_TextChanged
+
         passwordPanel.Controls.Add(txtPassword)
         passwordPanel.Controls.Add(btnTogglePassword)
 
-        Dim lblRole As New Label() With {.Text = "Role", .AutoSize = True, .Anchor = AnchorStyles.Right, .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)}
-        cboRole.Dock = DockStyle.Fill
+        Dim lblStrength As New Label() With {.Text = "Password Strength", .Left = 30, .Top = 110, .AutoSize = True}
+        progressPasswordStrength.Left = 220
+        progressPasswordStrength.Top = 105
+        progressPasswordStrength.Width = 260
+        progressPasswordStrength.Minimum = 0
+        progressPasswordStrength.Maximum = 100
+
+        Dim lblRole As New Label() With {.Text = "Role", .Left = 30, .Top = 150, .AutoSize = True}
+        cboRole.Left = 220
+        cboRole.Top = 145
+        cboRole.Width = 260
         cboRole.DropDownStyle = ComboBoxStyle.DropDownList
         cboRole.Items.AddRange(New Object() {"Manager", "Staff"})
         cboRole.SelectedIndex = 1
@@ -126,68 +100,59 @@ Public Class frmAddUser
             cboRole.Enabled = False
         End If
 
-        Dim lblFullName As New Label() With {.Text = "Full Name", .AutoSize = True, .Anchor = AnchorStyles.Right, .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)}
-        txtFullName.Dock = DockStyle.Fill
+        Dim lblFullName As New Label() With {.Text = "Full Name", .Left = 30, .Top = 190, .AutoSize = True}
+        txtFullName.Left = 220
+        txtFullName.Top = 185
+        txtFullName.Width = 260
 
-        Dim lblEmail As New Label() With {.Text = "Email", .AutoSize = True, .Anchor = AnchorStyles.Right, .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)}
-        txtEmail.Dock = DockStyle.Fill
+        Dim lblEmail As New Label() With {.Text = "Email", .Left = 30, .Top = 230, .AutoSize = True}
+        txtEmail.Left = 220
+        txtEmail.Top = 225
+        txtEmail.Width = 260
 
-        Dim lblPhone As New Label() With {.Text = "Phone", .AutoSize = True, .Anchor = AnchorStyles.Right, .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)}
-        txtPhone.Dock = DockStyle.Fill
+        Dim lblPhone As New Label() With {.Text = "Phone", .Left = 30, .Top = 270, .AutoSize = True}
+        txtPhone.Left = 220
+        txtPhone.Top = 265
+        txtPhone.Width = 260
 
-        Dim lblStrength As New Label() With {.Text = "Strength", .AutoSize = True, .Anchor = AnchorStyles.Right, .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)}
-        progressPasswordStrength.Dock = DockStyle.Fill
-        progressPasswordStrength.Minimum = 0
-        progressPasswordStrength.Maximum = 100
-
-        contentGrid.Controls.Add(lblUsername, 0, 0)
-        contentGrid.Controls.Add(txtUsername, 1, 0)
-        contentGrid.Controls.Add(lblPassword, 0, 1)
-        contentGrid.Controls.Add(passwordPanel, 1, 1)
-        contentGrid.Controls.Add(lblStrength, 0, 2)
-        contentGrid.Controls.Add(progressPasswordStrength, 1, 2)
-        contentGrid.Controls.Add(lblRole, 0, 3)
-        contentGrid.Controls.Add(cboRole, 1, 3)
-        contentGrid.Controls.Add(lblFullName, 0, 4)
-        contentGrid.Controls.Add(txtFullName, 1, 4)
-        contentGrid.Controls.Add(lblEmail, 0, 5)
-        contentGrid.Controls.Add(txtEmail, 1, 5)
-        contentGrid.Controls.Add(lblPhone, 0, 6)
-        contentGrid.Controls.Add(txtPhone, 1, 6)
-
-        btnSave.Text = "Save"
-        btnSave.Left = 254
-        btnSave.Top = 334
-        btnSave.Width = 80
-        btnSave.Height = 36
-        btnSave.FlatStyle = FlatStyle.Flat
-        btnSave.FlatAppearance.BorderSize = 0
-        btnSave.BackColor = ColorTranslator.FromHtml("#27ae60")
-        btnSave.ForeColor = Color.White
-        btnSave.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
-        AddHandler btnSave.Click, AddressOf btnSave_Click
+        btnSave.Text = If(_isEditMode, "Update", "Save")
+        btnSave.Left = 220
+        btnSave.Top = 330
+        btnSave.Width = 120
 
         btnCancel.Text = "Cancel"
-        btnCancel.Left = 344
-        btnCancel.Top = 334
-        btnCancel.Width = 80
-        btnCancel.Height = 36
-        btnCancel.FlatStyle = FlatStyle.Flat
-        btnCancel.FlatAppearance.BorderSize = 0
-        btnCancel.BackColor = ColorTranslator.FromHtml("#e74c3c")
-        btnCancel.ForeColor = Color.White
-        btnCancel.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
-        AddHandler btnCancel.Click, AddressOf btnCancel_Click
+        btnCancel.Left = 360
+        btnCancel.Top = 330
+        btnCancel.Width = 120
 
-        Me.Controls.Add(headerPanel)
-        Me.Controls.Add(contentGrid)
+        UiStyleHelper.StyleForm(Me)
+        UiStyleHelper.StyleButton(btnSave, True)
+        UiStyleHelper.StyleButton(btnCancel)
+
+        Me.Controls.Add(lblUsername)
+        Me.Controls.Add(txtUsername)
+        Me.Controls.Add(lblPassword)
+        Me.Controls.Add(passwordPanel)
+        Me.Controls.Add(lblStrength)
+        Me.Controls.Add(progressPasswordStrength)
+        Me.Controls.Add(lblRole)
+        Me.Controls.Add(cboRole)
+        Me.Controls.Add(lblFullName)
+        Me.Controls.Add(txtFullName)
+        Me.Controls.Add(lblEmail)
+        Me.Controls.Add(txtEmail)
+        Me.Controls.Add(lblPhone)
+        Me.Controls.Add(txtPhone)
         Me.Controls.Add(btnSave)
         Me.Controls.Add(btnCancel)
 
+        AddHandler btnTogglePassword.Click, AddressOf btnTogglePassword_Click
+        AddHandler txtPassword.TextChanged, AddressOf txtPassword_TextChanged
+        AddHandler btnSave.Click, AddressOf btnSave_Click
+        AddHandler btnCancel.Click, AddressOf btnCancel_Click
+
         Me.AcceptButton = btnSave
         Me.CancelButton = btnCancel
-
-        UiStyleHelper.AddDialogCloseButton(Me)
     End Sub
 
     Private Sub btnTogglePassword_Click(sender As Object, e As EventArgs)

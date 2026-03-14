@@ -1,13 +1,17 @@
 Imports MySql.Data.MySqlClient
+Imports System.ComponentModel
 
 Public Class frmOnlinePayment
     Inherits Form
 
     Private ReadOnly _customerId As Integer
+    Private ReadOnly cardPanel As New RoundedPanel()
+    Private ReadOnly lblHeader As New Label()
     Private ReadOnly dgvUnpaidBills As New DataGridView()
     Private ReadOnly txtAmount As New TextBox()
     Private ReadOnly btnPay As New Button()
-    Private ReadOnly btnLogout As New Button()
+    Private ReadOnly btnCancel As New Button()
+    Private ReadOnly tips As New ToolTip()
 
     Public Sub New(customerId As Integer)
         _customerId = customerId
@@ -16,19 +20,49 @@ Public Class frmOnlinePayment
 
     Private Sub InitializeComponent()
         Me.Text = "Online Payment"
-        Me.StartPosition = FormStartPosition.CenterParent
-        Me.Width = 760
-        Me.Height = 480
-        Me.MinimumSize = New Size(720, 440)
+        Me.StartPosition = FormStartPosition.CenterScreen
+        Me.ClientSize = New Size(1200, 800)
+        Me.MinimumSize = New Size(900, 650)
+        Me.WindowState = FormWindowState.Maximized
+        Me.FormBorderStyle = FormBorderStyle.Sizable
+        Me.MaximizeBox = True
+        Me.MinimizeBox = True
+        Me.ShowInTaskbar = True
+        Me.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular)
+        Me.DoubleBuffered = True
+
+        cardPanel.Width = 600
+        cardPanel.Height = 640
+        cardPanel.BackColor = Color.White
+        cardPanel.CornerRadius = 18
+        cardPanel.Padding = New Padding(18)
 
         dgvUnpaidBills.Left = 20
-        dgvUnpaidBills.Top = 20
-        dgvUnpaidBills.Width = 700
-        dgvUnpaidBills.Height = 300
+        dgvUnpaidBills.Top = 92
+        dgvUnpaidBills.Width = 560
+        dgvUnpaidBills.Height = 360
         dgvUnpaidBills.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvUnpaidBills.AllowUserToAddRows = False
         dgvUnpaidBills.AllowUserToDeleteRows = False
+        dgvUnpaidBills.AllowUserToResizeRows = False
+        dgvUnpaidBills.SelectionMode = DataGridViewSelectionMode.FullRowSelect
         dgvUnpaidBills.AutoGenerateColumns = False
+        dgvUnpaidBills.BackgroundColor = Color.White
+        dgvUnpaidBills.BorderStyle = BorderStyle.None
+        dgvUnpaidBills.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
+        dgvUnpaidBills.RowHeadersVisible = False
+        dgvUnpaidBills.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvUnpaidBills.GridColor = ColorTranslator.FromHtml("#e5e7e9")
+        dgvUnpaidBills.AlternatingRowsDefaultCellStyle.BackColor = ColorTranslator.FromHtml("#f8f9f9")
+
+        lblHeader.Left = 20
+        lblHeader.Top = 18
+        lblHeader.Width = 560
+        lblHeader.Height = 56
+        lblHeader.TextAlign = ContentAlignment.MiddleLeft
+        lblHeader.Font = New Font("Segoe UI", 16.0F, FontStyle.Bold)
+        lblHeader.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        lblHeader.Text = "Pay Your Bill"
 
         Dim colSelect As New DataGridViewCheckBoxColumn() With {.Name = "colSelect", .HeaderText = "Select", .Width = 60}
         Dim colBillId As New DataGridViewTextBoxColumn() With {.Name = "colBillId", .HeaderText = "Bill ID", .ReadOnly = True, .Width = 90}
@@ -40,48 +74,103 @@ Public Class frmOnlinePayment
         AddHandler dgvUnpaidBills.CurrentCellDirtyStateChanged, AddressOf dgvUnpaidBills_CurrentCellDirtyStateChanged
         AddHandler dgvUnpaidBills.CellValueChanged, AddressOf dgvUnpaidBills_CellValueChanged
 
-        Dim lblAmount As New Label() With {.Text = "Amount", .Left = 20, .Top = 340, .AutoSize = True}
-        txtAmount.Left = 80
-        txtAmount.Top = 335
-        txtAmount.Width = 130
+        Dim lblAmount As New Label() With {
+            .Text = "Amount",
+            .Left = 20,
+            .Top = 470,
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 10.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
+        txtAmount.Left = 95
+        txtAmount.Top = 464
+        txtAmount.Width = 190
         txtAmount.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        txtAmount.Font = New Font("Segoe UI", 11.0F, FontStyle.Regular)
 
-        btnPay.Text = "Pay Now"
-        btnPay.Left = 240
-        btnPay.Top = 333
-        btnPay.Width = 120
+        btnPay.Text = "💳 Pay Now"
+        btnPay.Left = 20
+        btnPay.Top = 515
+        btnPay.Width = 265
+        btnPay.Height = 48
         btnPay.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        btnPay.FlatStyle = FlatStyle.Flat
+        btnPay.FlatAppearance.BorderSize = 0
+        btnPay.BackColor = ColorTranslator.FromHtml("#27ae60")
+        btnPay.ForeColor = Color.White
+        btnPay.Font = New Font("Segoe UI", 11.0F, FontStyle.Bold)
         AddHandler btnPay.Click, AddressOf btnPay_Click
 
-        btnLogout.Text = "Logout"
-        btnLogout.Left = 380
-        btnLogout.Top = 333
-        btnLogout.Width = 120
-        btnLogout.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
-        btnLogout.Visible = False
-        AddHandler btnLogout.Click, AddressOf btnLogout_Click
+        btnCancel.Text = "Cancel"
+        btnCancel.Left = 315
+        btnCancel.Top = 515
+        btnCancel.Width = 265
+        btnCancel.Height = 48
+        btnCancel.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        btnCancel.FlatStyle = FlatStyle.Flat
+        btnCancel.FlatAppearance.BorderSize = 0
+        btnCancel.BackColor = ColorTranslator.FromHtml("#e74c3c")
+        btnCancel.ForeColor = Color.White
+        btnCancel.Font = New Font("Segoe UI", 11.0F, FontStyle.Bold)
+        AddHandler btnCancel.Click, AddressOf btnCancel_Click
 
-        UiStyleHelper.StyleForm(Me)
-        UiStyleHelper.StyleDataGrid(dgvUnpaidBills)
-        UiStyleHelper.StyleButton(btnPay, True)
-        UiStyleHelper.StyleButton(btnLogout)
+        cardPanel.Controls.Add(lblHeader)
+        cardPanel.Controls.Add(dgvUnpaidBills)
+        cardPanel.Controls.Add(lblAmount)
+        cardPanel.Controls.Add(txtAmount)
+        cardPanel.Controls.Add(btnPay)
+        cardPanel.Controls.Add(btnCancel)
+        Me.Controls.Add(cardPanel)
 
-        Me.Controls.Add(dgvUnpaidBills)
-        Me.Controls.Add(lblAmount)
-        Me.Controls.Add(txtAmount)
-        Me.Controls.Add(btnPay)
-        Me.Controls.Add(btnLogout)
+        tips.SetToolTip(txtAmount, "Enter amount to pay (can be less than total).")
 
         AddHandler Me.Load, AddressOf frmOnlinePayment_Load
-    End Sub
-
-    Private Sub btnLogout_Click(sender As Object, e As EventArgs)
-        SessionManager.Logout(Me)
+        AddHandler Me.Resize, AddressOf frmOnlinePayment_Resize
     End Sub
 
     Private Sub frmOnlinePayment_Load(sender As Object, e As EventArgs)
         DatabaseHelper.EnsureCoreSchema()
+        LoadCustomerHeader()
+        CenterCard()
+        UiStyleHelper.AddDialogCloseButton(Me)
         LoadUnpaidBills()
+    End Sub
+
+    Private Sub frmOnlinePayment_Resize(sender As Object, e As EventArgs)
+        CenterCard()
+    End Sub
+
+    Protected Overrides Sub OnPaintBackground(e As PaintEventArgs)
+        Using brush As New Drawing2D.LinearGradientBrush(Me.ClientRectangle,
+                                                          ColorTranslator.FromHtml("#2c3e50"),
+                                                          ColorTranslator.FromHtml("#3498db"),
+                                                          Drawing2D.LinearGradientMode.Vertical)
+            e.Graphics.FillRectangle(brush, Me.ClientRectangle)
+        End Using
+    End Sub
+
+    Private Sub CenterCard()
+        cardPanel.Left = (Me.ClientSize.Width - cardPanel.Width) \ 2
+        cardPanel.Top = (Me.ClientSize.Height - cardPanel.Height) \ 2
+    End Sub
+
+    Private Sub LoadCustomerHeader()
+        Try
+            Const sql As String = "SELECT full_name FROM users WHERE id = @customer_id LIMIT 1;"
+            Dim parameters As New Dictionary(Of String, Object) From {
+                {"@customer_id", _customerId}
+            }
+            Dim result As Object = DatabaseHelper.ExecuteScalar(sql, parameters)
+            Dim customerName As String = If(result Is Nothing OrElse result Is DBNull.Value, "Customer", result.ToString())
+            lblHeader.Text = $"Pay Your Bill - {customerName}"
+        Catch
+            lblHeader.Text = "Pay Your Bill"
+        End Try
+    End Sub
+
+    Private Sub btnCancel_Click(sender As Object, e As EventArgs)
+        Me.DialogResult = DialogResult.Cancel
+        Me.Close()
     End Sub
 
     Private Sub LoadUnpaidBills()
@@ -262,5 +351,67 @@ Public Class frmOnlinePayment
     Private Class BillItem
         Public Property BillId As Integer
         Public Property Outstanding As Decimal
+    End Class
+
+    Private NotInheritable Class RoundedPanel
+        Inherits Panel
+
+        Private _cornerRadius As Integer = 16
+
+        <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
+        <DefaultValue(16)>
+        Public Property CornerRadius As Integer
+            Get
+                Return _cornerRadius
+            End Get
+            Set(value As Integer)
+                _cornerRadius = Math.Max(1, value)
+                UpdateRegion()
+                Me.Invalidate()
+            End Set
+        End Property
+
+        Protected Overrides Sub OnSizeChanged(e As EventArgs)
+            MyBase.OnSizeChanged(e)
+            UpdateRegion()
+        End Sub
+
+        Protected Overrides Sub OnPaint(e As PaintEventArgs)
+            MyBase.OnPaint(e)
+
+            e.Graphics.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
+            Using path As Drawing2D.GraphicsPath = CreateRoundedPath(Me.ClientRectangle, _cornerRadius)
+                Using pen As New Pen(Color.FromArgb(220, ColorTranslator.FromHtml("#d5d8dc")), 1)
+                    e.Graphics.DrawPath(pen, path)
+                End Using
+            End Using
+        End Sub
+
+        Private Sub UpdateRegion()
+            If Me.Width <= 0 OrElse Me.Height <= 0 Then
+                Return
+            End If
+
+            Using path As Drawing2D.GraphicsPath = CreateRoundedPath(Me.ClientRectangle, _cornerRadius)
+                Me.Region = New Region(path)
+            End Using
+        End Sub
+
+        Private Shared Function CreateRoundedPath(bounds As Rectangle, radius As Integer) As Drawing2D.GraphicsPath
+            Dim path As New Drawing2D.GraphicsPath()
+            Dim diameter As Integer = radius * 2
+            Dim arc As New Rectangle(bounds.X, bounds.Y, diameter, diameter)
+
+            path.AddArc(arc, 180, 90)
+            arc.X = bounds.Right - diameter
+            path.AddArc(arc, 270, 90)
+            arc.Y = bounds.Bottom - diameter
+            path.AddArc(arc, 0, 90)
+            arc.X = bounds.X
+            path.AddArc(arc, 90, 90)
+            path.CloseFigure()
+
+            Return path
+        End Function
     End Class
 End Class

@@ -3,18 +3,32 @@ Imports MySql.Data.MySqlClient
 Public Class frmEnterReading
     Inherits Form
 
+    Private ReadOnly pnlTopBar As New Panel()
+    Private ReadOnly lblStaffName As New Label()
+    Private ReadOnly pnlBottomActions As New Panel()
+    Private ReadOnly actionsFlow As New FlowLayoutPanel()
+    Private ReadOnly splitMain As New SplitContainer()
+    Private ReadOnly pnlLeftCard As New Panel()
+    Private ReadOnly pnlRightCard As New Panel()
+    Private ReadOnly lblSearchIcon As New Label()
+    Private ReadOnly lblLastReadingHeader As New Label()
+    Private ReadOnly pnlLastReadingInfo As New Panel()
+    Private ReadOnly lblLastReadingTitle As New Label()
+    Private ReadOnly lblLastReadingDateTitle As New Label()
     Private ReadOnly cboCustomer As New ComboBox()
     Private ReadOnly txtNewReading As New TextBox()
     Private ReadOnly dtpReadingDate As New DateTimePicker()
     Private ReadOnly lblLastReadingValue As New Label()
     Private ReadOnly lblLastReadingDate As New Label()
+    Private ReadOnly lblCollectionsCaption As New Label()
+    Private ReadOnly lblCollectionsAmount As New Label()
+    Private ReadOnly dgvRecentActivity As New DataGridView()
     Private ReadOnly btnSaveReading As New Button()
     Private ReadOnly btnRegisterCustomer As New Button()
     Private ReadOnly btnProcessPayment As New Button()
     Private ReadOnly btnViewBills As New Button()
     Private ReadOnly btnMyActivity As New Button()
     Private ReadOnly btnChangePassword As New Button()
-    Private ReadOnly lblTodayCollections As New Label()
     Private ReadOnly btnLogout As New Button()
     Private ReadOnly err As New ErrorProvider()
     Private ReadOnly tips As New ToolTip()
@@ -29,132 +43,290 @@ Public Class frmEnterReading
     Private Sub InitializeComponent()
         Me.Text = "Enter Meter Reading"
         Me.StartPosition = FormStartPosition.CenterScreen
-        Me.Width = 700
-        Me.Height = 455
-        Me.MinimumSize = New Size(700, 430)
+        Me.ClientSize = New Size(1200, 800)
+        Me.MinimumSize = New Size(1000, 700)
+        Me.WindowState = FormWindowState.Maximized
+        Me.FormBorderStyle = FormBorderStyle.Sizable
+        Me.MaximizeBox = True
+        Me.MinimizeBox = True
+        Me.ShowInTaskbar = True
+        Me.BackColor = ColorTranslator.FromHtml("#ecf0f1")
+        Me.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular)
 
-        Dim labelLeft As Integer = 30
-        Dim fieldLeft As Integer = 210
-        Dim row1Top As Integer = 28
-        Dim rowGap As Integer = 44
+        pnlTopBar.Dock = DockStyle.Top
+        pnlTopBar.Height = 58
+        pnlTopBar.BackColor = Color.White
+        pnlTopBar.Padding = New Padding(20, 10, 20, 10)
 
-        Dim lblCustomer As New Label() With {.Text = "Customer", .Left = labelLeft, .Top = row1Top + 4, .AutoSize = True}
-        cboCustomer.Left = fieldLeft
-        cboCustomer.Top = row1Top
-        cboCustomer.Width = 320
+        lblStaffName.AutoSize = True
+        lblStaffName.Font = New Font("Segoe UI", 11.0F, FontStyle.Bold)
+        lblStaffName.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        lblStaffName.Location = New Point(20, 18)
+
+        btnLogout.Text = "Logout"
+        btnLogout.Width = 95
+        btnLogout.Height = 34
+        btnLogout.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnLogout.Left = Me.ClientSize.Width - btnLogout.Width - 24
+        btnLogout.Top = 12
+        btnLogout.FlatStyle = FlatStyle.Flat
+        btnLogout.FlatAppearance.BorderSize = 0
+        btnLogout.BackColor = ColorTranslator.FromHtml("#e74c3c")
+        btnLogout.ForeColor = Color.White
+        btnLogout.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        pnlTopBar.Controls.Add(lblStaffName)
+        pnlTopBar.Controls.Add(btnLogout)
+
+        splitMain.Dock = DockStyle.Fill
+        splitMain.Orientation = Orientation.Vertical
+        splitMain.SplitterDistance = 380
+        splitMain.BackColor = ColorTranslator.FromHtml("#ecf0f1")
+        splitMain.Panel1.Padding = New Padding(16, 14, 8, 10)
+        splitMain.Panel2.Padding = New Padding(8, 14, 16, 10)
+
+        pnlLeftCard.Dock = DockStyle.Fill
+        pnlLeftCard.BackColor = Color.White
+        pnlLeftCard.Padding = New Padding(22)
+
+        Dim leftLayout As New TableLayoutPanel()
+        leftLayout.Dock = DockStyle.Fill
+        leftLayout.ColumnCount = 1
+        leftLayout.RowCount = 9
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 40.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 14.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 80.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 50.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 40.0F))
+
+        Dim lblCustomer As New Label() With {
+            .Text = "Customer",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 10.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
+
+        Dim customerPanel As New Panel() With {.Dock = DockStyle.Fill}
+        lblSearchIcon.Text = "🔍"
+        lblSearchIcon.AutoSize = True
+        lblSearchIcon.Font = New Font("Segoe UI Emoji", 10.0F, FontStyle.Regular)
+        lblSearchIcon.Left = 8
+        lblSearchIcon.Top = 10
+
+        cboCustomer.Left = 34
+        cboCustomer.Top = 6
+        cboCustomer.Width = 290
         cboCustomer.DropDownStyle = ComboBoxStyle.DropDown
         cboCustomer.AutoCompleteMode = AutoCompleteMode.SuggestAppend
         cboCustomer.AutoCompleteSource = AutoCompleteSource.ListItems
+        cboCustomer.Font = New Font("Segoe UI", 10.0F, FontStyle.Regular)
         AddHandler cboCustomer.SelectedIndexChanged, AddressOf cboCustomer_SelectedIndexChanged
+        customerPanel.Controls.Add(lblSearchIcon)
+        customerPanel.Controls.Add(cboCustomer)
 
-        Dim lblNewReading As New Label() With {.Text = "New Reading", .Left = labelLeft, .Top = row1Top + rowGap + 4, .AutoSize = True}
-        txtNewReading.Left = fieldLeft
-        txtNewReading.Top = row1Top + rowGap
-        txtNewReading.Width = 320
+        lblLastReadingHeader.Text = "Last Reading"
+        lblLastReadingHeader.AutoSize = True
+        lblLastReadingHeader.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        lblLastReadingHeader.ForeColor = ColorTranslator.FromHtml("#2c3e50")
 
-        Dim lblReadingDate As New Label() With {.Text = "Reading Date", .Left = labelLeft, .Top = row1Top + (rowGap * 2) + 4, .AutoSize = True}
-        dtpReadingDate.Left = fieldLeft
-        dtpReadingDate.Top = row1Top + (rowGap * 2)
-        dtpReadingDate.Width = 320
+        pnlLastReadingInfo.Dock = DockStyle.Fill
+        pnlLastReadingInfo.BackColor = ColorTranslator.FromHtml("#d6eaf8")
+        pnlLastReadingInfo.Padding = New Padding(12, 10, 12, 10)
+
+        lblLastReadingTitle.Text = "Value:"
+        lblLastReadingTitle.AutoSize = True
+        lblLastReadingTitle.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        lblLastReadingTitle.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        lblLastReadingTitle.Left = 8
+        lblLastReadingTitle.Top = 10
+
+        lblLastReadingValue.AutoSize = True
+        lblLastReadingValue.Font = New Font("Segoe UI", 11.0F, FontStyle.Bold)
+        lblLastReadingValue.ForeColor = ColorTranslator.FromHtml("#1f618d")
+        lblLastReadingValue.Left = 70
+        lblLastReadingValue.Top = 8
+        lblLastReadingValue.Text = "-"
+
+        lblLastReadingDateTitle.Text = "Date:"
+        lblLastReadingDateTitle.AutoSize = True
+        lblLastReadingDateTitle.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        lblLastReadingDateTitle.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        lblLastReadingDateTitle.Left = 8
+        lblLastReadingDateTitle.Top = 42
+
+        lblLastReadingDate.AutoSize = True
+        lblLastReadingDate.Font = New Font("Segoe UI", 10.0F, FontStyle.Regular)
+        lblLastReadingDate.ForeColor = ColorTranslator.FromHtml("#1f618d")
+        lblLastReadingDate.Left = 70
+        lblLastReadingDate.Top = 40
+        lblLastReadingDate.Text = "-"
+
+        pnlLastReadingInfo.Controls.Add(lblLastReadingTitle)
+        pnlLastReadingInfo.Controls.Add(lblLastReadingValue)
+        pnlLastReadingInfo.Controls.Add(lblLastReadingDateTitle)
+        pnlLastReadingInfo.Controls.Add(lblLastReadingDate)
+
+        Dim lblNewReading As New Label() With {
+            .Text = "New Reading",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 10.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
+        txtNewReading.Dock = DockStyle.Fill
+        txtNewReading.Font = New Font("Segoe UI", 14.0F, FontStyle.Bold)
+
+        Dim lblReadingDate As New Label() With {
+            .Text = "Reading Date",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 10.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
+        dtpReadingDate.Dock = DockStyle.Fill
         dtpReadingDate.Format = DateTimePickerFormat.[Short]
         dtpReadingDate.Value = Date.Today
 
-        Dim lblLastReadingTitle As New Label() With {.Text = "Last Reading", .Left = labelLeft, .Top = row1Top + (rowGap * 3) + 4, .AutoSize = True}
-        lblLastReadingValue.Left = fieldLeft
-        lblLastReadingValue.Top = row1Top + (rowGap * 3) + 4
-        lblLastReadingValue.AutoSize = True
-        lblLastReadingValue.Text = "-"
-
-        Dim lblLastReadingDateTitle As New Label() With {.Text = "Last Reading Date", .Left = labelLeft, .Top = row1Top + (rowGap * 4) - 8, .AutoSize = True}
-        lblLastReadingDate.Left = fieldLeft
-        lblLastReadingDate.Top = row1Top + (rowGap * 4) - 8
-        lblLastReadingDate.AutoSize = True
-        lblLastReadingDate.Text = "-"
-
         btnSaveReading.Text = "Save Reading"
-        btnSaveReading.Width = 130
-        btnSaveReading.Height = 32
+        btnSaveReading.Dock = DockStyle.Fill
+        btnSaveReading.Height = 42
+        btnSaveReading.FlatStyle = FlatStyle.Flat
+        btnSaveReading.FlatAppearance.BorderSize = 0
+        btnSaveReading.BackColor = ColorTranslator.FromHtml("#27ae60")
+        btnSaveReading.ForeColor = Color.White
+        btnSaveReading.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         AddHandler btnSaveReading.Click, AddressOf btnSaveReading_Click
 
+        leftLayout.Controls.Add(lblCustomer, 0, 0)
+        leftLayout.Controls.Add(customerPanel, 0, 1)
+        leftLayout.Controls.Add(New Label() With {.AutoSize = True}, 0, 2)
+        leftLayout.Controls.Add(lblLastReadingHeader, 0, 3)
+        leftLayout.Controls.Add(pnlLastReadingInfo, 0, 4)
+        leftLayout.Controls.Add(lblNewReading, 0, 5)
+        leftLayout.Controls.Add(txtNewReading, 0, 6)
+        leftLayout.Controls.Add(lblReadingDate, 0, 7)
+        leftLayout.Controls.Add(dtpReadingDate, 0, 8)
+
+        Dim savePanel As New Panel() With {.Dock = DockStyle.Bottom, .Height = 58}
+        btnSaveReading.Left = 0
+        btnSaveReading.Top = 8
+        btnSaveReading.Width = 330
+        savePanel.Controls.Add(btnSaveReading)
+        pnlLeftCard.Controls.Add(leftLayout)
+        pnlLeftCard.Controls.Add(savePanel)
+
         btnRegisterCustomer.Text = "Register Customer"
-        btnRegisterCustomer.Width = 130
-        btnRegisterCustomer.Height = 32
+        btnRegisterCustomer.Width = 150
+        btnRegisterCustomer.Height = 66
         AddHandler btnRegisterCustomer.Click, AddressOf btnRegisterCustomer_Click
 
         btnProcessPayment.Text = "Process Payment"
-        btnProcessPayment.Width = 130
-        btnProcessPayment.Height = 32
+        btnProcessPayment.Width = 150
+        btnProcessPayment.Height = 66
         AddHandler btnProcessPayment.Click, AddressOf btnProcessPayment_Click
 
         btnViewBills.Text = "View Bills"
-        btnViewBills.Width = 130
-        btnViewBills.Height = 32
+        btnViewBills.Width = 150
+        btnViewBills.Height = 66
         AddHandler btnViewBills.Click, AddressOf btnViewBills_Click
 
         btnMyActivity.Text = "My Activity"
-        btnMyActivity.Width = 130
-        btnMyActivity.Height = 32
+        btnMyActivity.Width = 150
+        btnMyActivity.Height = 66
         AddHandler btnMyActivity.Click, AddressOf btnMyActivity_Click
 
         btnChangePassword.Text = "Change Password"
-        btnChangePassword.Width = 130
-        btnChangePassword.Height = 32
+        btnChangePassword.Width = 150
+        btnChangePassword.Height = 66
         AddHandler btnChangePassword.Click, AddressOf btnChangePassword_Click
 
-        Dim actionPanel As New FlowLayoutPanel()
-        actionPanel.Left = 190
-        actionPanel.Top = 232
-        actionPanel.Width = 480
-        actionPanel.Height = 110
-        actionPanel.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Bottom
-        actionPanel.FlowDirection = FlowDirection.LeftToRight
-        actionPanel.WrapContents = True
+        StyleQuickActionButton(btnRegisterCustomer, "👤")
+        StyleQuickActionButton(btnProcessPayment, "💳")
+        StyleQuickActionButton(btnViewBills, "📄")
+        StyleQuickActionButton(btnMyActivity, "📈")
+        StyleQuickActionButton(btnChangePassword, "🔐")
 
-        actionPanel.Controls.Add(btnSaveReading)
-        actionPanel.Controls.Add(btnRegisterCustomer)
-        actionPanel.Controls.Add(btnProcessPayment)
-        actionPanel.Controls.Add(btnViewBills)
-        actionPanel.Controls.Add(btnMyActivity)
-        actionPanel.Controls.Add(btnChangePassword)
+        pnlRightCard.Dock = DockStyle.Fill
+        pnlRightCard.BackColor = Color.White
+        pnlRightCard.Padding = New Padding(18)
 
-        UiStyleHelper.StyleForm(Me)
-        UiStyleHelper.StyleButton(btnSaveReading, True)
-        UiStyleHelper.StyleButton(btnRegisterCustomer)
-        UiStyleHelper.StyleButton(btnProcessPayment)
-        UiStyleHelper.StyleButton(btnViewBills)
-        UiStyleHelper.StyleButton(btnMyActivity)
-        UiStyleHelper.StyleButton(btnChangePassword)
-        UiStyleHelper.StyleButton(btnLogout)
+        lblCollectionsCaption.Text = "Today's Collections"
+        lblCollectionsCaption.AutoSize = True
+        lblCollectionsCaption.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold)
+        lblCollectionsCaption.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        lblCollectionsCaption.Left = 2
+        lblCollectionsCaption.Top = 2
 
-        lblTodayCollections.Left = 190
-        lblTodayCollections.Top = 365
-        lblTodayCollections.AutoSize = True
-        lblTodayCollections.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
-        lblTodayCollections.Text = "Today's Collections: 0.00"
+        lblCollectionsAmount.Text = "0.00"
+        lblCollectionsAmount.AutoSize = True
+        lblCollectionsAmount.Font = New Font("Segoe UI", 24.0F, FontStyle.Bold)
+        lblCollectionsAmount.ForeColor = ColorTranslator.FromHtml("#27ae60")
+        lblCollectionsAmount.Left = 2
+        lblCollectionsAmount.Top = 28
 
-        btnLogout.Text = "Logout"
-        btnLogout.Left = 590
-        btnLogout.Top = 360
-        btnLogout.Width = 80
-        btnLogout.Height = 32
-        btnLogout.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
-        AddHandler btnLogout.Click, AddressOf btnLogout_Click
+        Dim recentHeader As New Label() With {
+            .Text = "Recent Activity",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 11.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
 
-        Me.Controls.Add(lblCustomer)
-        Me.Controls.Add(cboCustomer)
-        Me.Controls.Add(lblNewReading)
-        Me.Controls.Add(txtNewReading)
-        Me.Controls.Add(lblReadingDate)
-        Me.Controls.Add(dtpReadingDate)
-        Me.Controls.Add(lblLastReadingTitle)
-        Me.Controls.Add(lblLastReadingValue)
-        Me.Controls.Add(lblLastReadingDateTitle)
-        Me.Controls.Add(lblLastReadingDate)
-        Me.Controls.Add(actionPanel)
-        Me.Controls.Add(lblTodayCollections)
-        Me.Controls.Add(btnLogout)
+        dgvRecentActivity.Dock = DockStyle.Fill
+        dgvRecentActivity.ReadOnly = True
+        dgvRecentActivity.AllowUserToAddRows = False
+        dgvRecentActivity.AllowUserToDeleteRows = False
+        dgvRecentActivity.AllowUserToResizeRows = False
+        dgvRecentActivity.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvRecentActivity.MultiSelect = False
+        dgvRecentActivity.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvRecentActivity.RowHeadersVisible = False
+        dgvRecentActivity.BackgroundColor = Color.White
+        dgvRecentActivity.BorderStyle = BorderStyle.None
+        dgvRecentActivity.GridColor = ColorTranslator.FromHtml("#d5d8dc")
+        dgvRecentActivity.AlternatingRowsDefaultCellStyle.BackColor = ColorTranslator.FromHtml("#f8f9f9")
+
+        Dim rightLayout As New TableLayoutPanel()
+        rightLayout.Dock = DockStyle.Fill
+        rightLayout.ColumnCount = 1
+        rightLayout.RowCount = 4
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 26.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 70.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Percent, 100.0F))
+        rightLayout.Controls.Add(lblCollectionsCaption, 0, 0)
+        rightLayout.Controls.Add(lblCollectionsAmount, 0, 1)
+        rightLayout.Controls.Add(recentHeader, 0, 2)
+        rightLayout.Controls.Add(dgvRecentActivity, 0, 3)
+        pnlRightCard.Controls.Add(rightLayout)
+
+        splitMain.Panel1.Controls.Add(pnlLeftCard)
+        splitMain.Panel2.Controls.Add(pnlRightCard)
+
+        pnlBottomActions.Dock = DockStyle.Bottom
+        pnlBottomActions.Height = 96
+        pnlBottomActions.Padding = New Padding(16, 4, 16, 12)
+        pnlBottomActions.BackColor = ColorTranslator.FromHtml("#ecf0f1")
+
+        actionsFlow.Dock = DockStyle.Fill
+        actionsFlow.FlowDirection = FlowDirection.LeftToRight
+        actionsFlow.WrapContents = False
+        actionsFlow.AutoScroll = True
+        actionsFlow.Controls.Add(btnRegisterCustomer)
+        actionsFlow.Controls.Add(btnProcessPayment)
+        actionsFlow.Controls.Add(btnViewBills)
+        actionsFlow.Controls.Add(btnMyActivity)
+        actionsFlow.Controls.Add(btnChangePassword)
+        pnlBottomActions.Controls.Add(actionsFlow)
+
+        Me.Controls.Add(splitMain)
+        Me.Controls.Add(pnlBottomActions)
+        Me.Controls.Add(pnlTopBar)
 
         AddHandler Me.Load, AddressOf frmEnterReading_Load
+        AddHandler Me.Resize, AddressOf frmEnterReading_Resize
     End Sub
 
     Private Sub btnRegisterCustomer_Click(sender As Object, e As EventArgs)
@@ -176,10 +348,27 @@ Public Class frmEnterReading
             Return
         End If
 
+        lblStaffName.Text = $"Staff: {CurrentUser.Username}"
         tips.SetToolTip(txtNewReading, "Enter a positive reading")
 
         LoadCustomers()
         LoadTodayCollections()
+        LoadRecentActivity()
+    End Sub
+
+    Private Sub frmEnterReading_Resize(sender As Object, e As EventArgs)
+        btnLogout.Left = pnlTopBar.ClientSize.Width - btnLogout.Width - 20
+        splitMain.SplitterDistance = Math.Max(340, CInt(Me.ClientSize.Width * 0.3))
+    End Sub
+
+    Private Shared Sub StyleQuickActionButton(button As Button, icon As String)
+        button.FlatStyle = FlatStyle.Flat
+        button.FlatAppearance.BorderSize = 0
+        button.BackColor = Color.White
+        button.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        button.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        button.TextAlign = ContentAlignment.MiddleCenter
+        button.Text = $"{icon}{Environment.NewLine}{button.Text}"
     End Sub
 
     Private Sub LoadTodayCollections()
@@ -189,9 +378,23 @@ Public Class frmEnterReading
                 {"@staff_id", CurrentUser.UserId}
             }
             Dim total As Decimal = Convert.ToDecimal(DatabaseHelper.ExecuteScalar(sql, parameters))
-            lblTodayCollections.Text = $"Today's Collections: {total:N2}"
+            lblCollectionsAmount.Text = total.ToString("N2")
         Catch
-            lblTodayCollections.Text = "Today's Collections: -"
+            lblCollectionsAmount.Text = "-"
+        End Try
+    End Sub
+
+    Private Sub LoadRecentActivity()
+        Try
+            Const sql As String = "SELECT mr.reading_date AS `Date`, c.meter_number AS `Meter`, u.full_name AS `Customer`, mr.reading_value AS `Reading`, mr.consumption AS `Consumption` FROM meter_readings mr INNER JOIN customers c ON mr.customer_id = c.id INNER JOIN users u ON c.id = u.id WHERE mr.entered_by = @staff_id ORDER BY mr.reading_date DESC, mr.reading_id DESC LIMIT 40;"
+            Dim parameters As New Dictionary(Of String, Object) From {
+                {"@staff_id", CurrentUser.UserId}
+            }
+
+            Dim dt As DataTable = DatabaseHelper.ExecuteDataTable(sql, parameters)
+            dgvRecentActivity.DataSource = dt
+        Catch
+            dgvRecentActivity.DataSource = Nothing
         End Try
     End Sub
 
@@ -346,6 +549,7 @@ Public Class frmEnterReading
 
             txtNewReading.Clear()
             LoadLastReading(_selectedCustomerId)
+            LoadRecentActivity()
         Catch ex As Exception
             MessageBox.Show("Failed to save reading: " & ex.Message,
                             "Error",

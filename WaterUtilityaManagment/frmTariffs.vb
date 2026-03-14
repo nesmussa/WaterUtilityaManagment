@@ -16,69 +16,124 @@ Public Class frmTariffs
     Private Sub InitializeComponent()
         Me.Text = "Tariff Management"
         Me.StartPosition = FormStartPosition.CenterScreen
-        Me.Width = 850
-        Me.Height = 560
-        Me.MinimumSize = New Size(760, 520)
+        Me.ClientSize = New Size(1200, 800)
+        Me.MinimumSize = New Size(1000, 700)
+        Me.WindowState = FormWindowState.Maximized
+        Me.FormBorderStyle = FormBorderStyle.Sizable
+        Me.MaximizeBox = True
+        Me.MinimizeBox = True
+        Me.ShowInTaskbar = True
+        Me.BackColor = ColorTranslator.FromHtml("#ecf0f1")
+        Me.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular)
 
-        dgvTariffs.Left = 20
-        dgvTariffs.Top = 20
-        dgvTariffs.Width = 790
-        dgvTariffs.Height = 420
-        dgvTariffs.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        Dim topBar As New Panel() With {
+            .Dock = DockStyle.Top,
+            .Height = 64,
+            .BackColor = Color.White,
+            .Padding = New Padding(16, 12, 16, 12)
+        }
+
+        Dim lblTitle As New Label() With {
+            .Text = "Tariff Rates",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 16.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50"),
+            .Location = New Point(16, 16)
+        }
+
+        btnLogout.Text = "Logout"
+        btnLogout.Width = 95
+        btnLogout.Height = 34
+        btnLogout.Left = Me.ClientSize.Width - btnLogout.Width - 20
+        btnLogout.Top = 14
+        btnLogout.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnLogout.FlatStyle = FlatStyle.Flat
+        btnLogout.FlatAppearance.BorderSize = 0
+        btnLogout.BackColor = ColorTranslator.FromHtml("#e74c3c")
+        btnLogout.ForeColor = Color.White
+        btnLogout.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        topBar.Controls.Add(lblTitle)
+        topBar.Controls.Add(btnLogout)
+
+        Dim mainPanel As New Panel() With {
+            .Dock = DockStyle.Fill,
+            .Padding = New Padding(16),
+            .BackColor = ColorTranslator.FromHtml("#ecf0f1")
+        }
+
+        Dim contentPanel As New Panel() With {
+            .Dock = DockStyle.Fill,
+            .BackColor = Color.White,
+            .Padding = New Padding(14)
+        }
+
+        dgvTariffs.Dock = DockStyle.Fill
         dgvTariffs.AllowUserToAddRows = False
         dgvTariffs.AllowUserToDeleteRows = False
+        dgvTariffs.AllowUserToResizeRows = False
         dgvTariffs.ReadOnly = True
         dgvTariffs.SelectionMode = DataGridViewSelectionMode.FullRowSelect
         dgvTariffs.MultiSelect = False
         dgvTariffs.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvTariffs.RowHeadersVisible = False
+        dgvTariffs.BackgroundColor = Color.White
+        dgvTariffs.BorderStyle = BorderStyle.None
+        dgvTariffs.GridColor = ColorTranslator.FromHtml("#d5d8dc")
+        dgvTariffs.AlternatingRowsDefaultCellStyle.BackColor = ColorTranslator.FromHtml("#f8f9f9")
+        AddHandler dgvTariffs.CellFormatting, AddressOf dgvTariffs_CellFormatting
+        AddHandler dgvTariffs.CellDoubleClick, AddressOf dgvTariffs_CellDoubleClick
 
-        btnAdd.Text = "Add New Tariff"
+        btnAdd.Text = "➕ Add"
         btnAdd.Width = 150
-        btnAdd.Height = 32
+        btnAdd.Height = 38
+        btnAdd.FlatStyle = FlatStyle.Flat
+        btnAdd.FlatAppearance.BorderSize = 0
+        btnAdd.BackColor = ColorTranslator.FromHtml("#3498db")
+        btnAdd.ForeColor = Color.White
+        btnAdd.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
         AddHandler btnAdd.Click, AddressOf btnAdd_Click
 
-        btnEdit.Text = "Edit"
-        btnEdit.Width = 120
-        btnEdit.Height = 32
+        btnEdit.Text = "✏ Edit"
+        btnEdit.Width = 130
+        btnEdit.Height = 38
+        btnEdit.FlatStyle = FlatStyle.Flat
+        btnEdit.FlatAppearance.BorderSize = 0
+        btnEdit.BackColor = ColorTranslator.FromHtml("#27ae60")
+        btnEdit.ForeColor = Color.White
+        btnEdit.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
         AddHandler btnEdit.Click, AddressOf btnEdit_Click
 
-        btnDeactivate.Text = "Deactivate"
-        btnDeactivate.Width = 120
-        btnDeactivate.Height = 32
+        btnDeactivate.Text = "🛑 Deactivate"
+        btnDeactivate.Width = 160
+        btnDeactivate.Height = 38
+        btnDeactivate.FlatStyle = FlatStyle.Flat
+        btnDeactivate.FlatAppearance.BorderSize = 0
+        btnDeactivate.BackColor = ColorTranslator.FromHtml("#95a5a6")
+        btnDeactivate.ForeColor = Color.White
+        btnDeactivate.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
         AddHandler btnDeactivate.Click, AddressOf btnDeactivate_Click
 
-        btnLogout.Text = "Logout"
-        btnLogout.Width = 120
-        btnLogout.Height = 32
-        btnLogout.Visible = False
-        AddHandler btnLogout.Click, AddressOf btnLogout_Click
-
         Dim actionPanel As New FlowLayoutPanel()
-        actionPanel.Left = 20
-        actionPanel.Top = 452
-        actionPanel.Width = 540
-        actionPanel.Height = 40
-        actionPanel.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        actionPanel.Dock = DockStyle.Bottom
+        actionPanel.Height = 50
+        actionPanel.Padding = New Padding(0, 4, 0, 0)
         actionPanel.FlowDirection = FlowDirection.LeftToRight
         actionPanel.WrapContents = False
-        actionPanel.Padding = New Padding(0)
-        actionPanel.Margin = New Padding(0)
         actionPanel.Controls.Add(btnAdd)
         actionPanel.Controls.Add(btnEdit)
         actionPanel.Controls.Add(btnDeactivate)
-        actionPanel.Controls.Add(btnLogout)
 
-        UiStyleHelper.StyleForm(Me)
-        UiStyleHelper.StyleDataGrid(dgvTariffs)
-        UiStyleHelper.StyleButton(btnAdd, True)
-        UiStyleHelper.StyleButton(btnEdit, True)
-        UiStyleHelper.StyleButton(btnDeactivate)
-        UiStyleHelper.StyleButton(btnLogout)
+        contentPanel.Controls.Add(dgvTariffs)
+        contentPanel.Controls.Add(actionPanel)
+        mainPanel.Controls.Add(contentPanel)
 
-        Me.Controls.Add(dgvTariffs)
-        Me.Controls.Add(actionPanel)
+        Me.Controls.Add(mainPanel)
+        Me.Controls.Add(topBar)
 
         AddHandler Me.Load, AddressOf frmTariffs_Load
+        AddHandler Me.Resize, Sub() btnLogout.Left = topBar.ClientSize.Width - btnLogout.Width - 16
     End Sub
 
     Private Sub frmTariffs_Load(sender As Object, e As EventArgs)
@@ -91,6 +146,7 @@ Public Class frmTariffs
             Return
         End If
 
+        UiStyleHelper.AddDialogCloseButton(Me)
         LoadTariffs()
     End Sub
 
@@ -103,12 +159,51 @@ Public Class frmTariffs
             If dgvTariffs.Columns.Contains("tariff_id") Then
                 dgvTariffs.Columns("tariff_id").Visible = False
             End If
+
+            If dgvTariffs.Columns.Contains("rate") Then
+                dgvTariffs.Columns("rate").HeaderText = "Rate"
+                dgvTariffs.Columns("rate").DefaultCellStyle.Format = "N2"
+            End If
+
+            If dgvTariffs.Columns.Contains("effective_from") Then
+                dgvTariffs.Columns("effective_from").HeaderText = "Effective From"
+                dgvTariffs.Columns("effective_from").DefaultCellStyle.Format = "yyyy-MM-dd"
+            End If
+
+            If dgvTariffs.Columns.Contains("effective_to") Then
+                dgvTariffs.Columns("effective_to").HeaderText = "Effective To"
+                dgvTariffs.Columns("effective_to").DefaultCellStyle.Format = "yyyy-MM-dd"
+            End If
         Catch ex As Exception
             MessageBox.Show("Failed to load tariffs: " & ex.Message,
                             "Error",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error)
         End Try
+    End Sub
+
+    Private Sub dgvTariffs_CellFormatting(sender As Object, e As DataGridViewCellFormattingEventArgs)
+        If e.RowIndex < 0 OrElse Not dgvTariffs.Columns.Contains("effective_to") Then
+            Return
+        End If
+
+        Dim row As DataGridViewRow = dgvTariffs.Rows(e.RowIndex)
+        Dim effectiveToValue As Object = row.Cells("effective_to").Value
+        Dim isActive As Boolean = effectiveToValue Is Nothing OrElse effectiveToValue Is DBNull.Value
+
+        If isActive Then
+            row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#eafaf1")
+        Else
+            row.DefaultCellStyle.BackColor = Color.White
+        End If
+    End Sub
+
+    Private Sub dgvTariffs_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs)
+        If e.RowIndex < 0 Then
+            Return
+        End If
+
+        btnEdit_Click(btnEdit, EventArgs.Empty)
     End Sub
 
     Private Sub btnAdd_Click(sender As Object, e As EventArgs)

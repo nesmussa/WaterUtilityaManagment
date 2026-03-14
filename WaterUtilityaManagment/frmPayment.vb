@@ -4,9 +4,16 @@ Public Class frmPayment
     Inherits Form
 
     Private ReadOnly _initialCustomerId As Integer?
+    Private ReadOnly pnlTopBar As New Panel()
+    Private ReadOnly lblTitle As New Label()
+    Private ReadOnly splitMain As New SplitContainer()
+    Private ReadOnly pnlLeftCard As New Panel()
+    Private ReadOnly pnlRightCard As New Panel()
+    Private ReadOnly lblSearchIcon As New Label()
+    Private ReadOnly txtCustomerDetails As New TextBox()
+    Private ReadOnly lblTotalAmountValue As New Label()
     Private ReadOnly txtCustomerId As New TextBox()
     Private ReadOnly cboCustomer As New ComboBox()
-    Private ReadOnly lblCustomerName As New Label()
     Private ReadOnly dgvBills As New DataGridView()
     Private ReadOnly txtAmountPaid As New TextBox()
     Private ReadOnly cboPaymentMode As New ComboBox()
@@ -22,38 +29,141 @@ Public Class frmPayment
     Private Sub InitializeComponent()
         Me.Text = "Process Payment"
         Me.StartPosition = FormStartPosition.CenterScreen
-        Me.Width = 950
-        Me.Height = 620
-        Me.MinimumSize = New Size(900, 580)
+        Me.ClientSize = New Size(1200, 800)
+        Me.MinimumSize = New Size(1000, 700)
+        Me.WindowState = FormWindowState.Maximized
+        Me.FormBorderStyle = FormBorderStyle.Sizable
+        Me.MaximizeBox = True
+        Me.MinimizeBox = True
+        Me.ShowInTaskbar = True
+        Me.BackColor = ColorTranslator.FromHtml("#ecf0f1")
+        Me.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular)
 
         txtCustomerId.Visible = False
 
-        Dim lblCustomer As New Label() With {.Text = "Select Customer", .Left = 20, .Top = 20, .AutoSize = True}
-        cboCustomer.Left = 130
-        cboCustomer.Top = 15
-        cboCustomer.Width = 780
-        cboCustomer.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        pnlTopBar.Dock = DockStyle.Top
+        pnlTopBar.Height = 62
+        pnlTopBar.BackColor = Color.White
+        pnlTopBar.Padding = New Padding(20, 10, 20, 10)
+
+        lblTitle.Text = "Process Payment"
+        lblTitle.AutoSize = True
+        lblTitle.Font = New Font("Segoe UI", 16.0F, FontStyle.Bold)
+        lblTitle.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        lblTitle.Location = New Point(20, 16)
+
+        btnLogout.Text = "Close"
+        btnLogout.Width = 95
+        btnLogout.Height = 34
+        btnLogout.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnLogout.Left = Me.ClientSize.Width - btnLogout.Width - 24
+        btnLogout.Top = 14
+        btnLogout.FlatStyle = FlatStyle.Flat
+        btnLogout.FlatAppearance.BorderSize = 0
+        btnLogout.BackColor = ColorTranslator.FromHtml("#e74c3c")
+        btnLogout.ForeColor = Color.White
+        btnLogout.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        pnlTopBar.Controls.Add(lblTitle)
+        pnlTopBar.Controls.Add(btnLogout)
+
+        splitMain.Dock = DockStyle.Fill
+        splitMain.Orientation = Orientation.Vertical
+        splitMain.SplitterDistance = 380
+        splitMain.Panel1.Padding = New Padding(16, 14, 8, 14)
+        splitMain.Panel2.Padding = New Padding(8, 14, 16, 14)
+
+        pnlLeftCard.Dock = DockStyle.Fill
+        pnlLeftCard.BackColor = Color.White
+        pnlLeftCard.Padding = New Padding(20)
+
+        Dim leftLayout As New TableLayoutPanel()
+        leftLayout.Dock = DockStyle.Fill
+        leftLayout.ColumnCount = 1
+        leftLayout.RowCount = 4
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 42.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        leftLayout.RowStyles.Add(New RowStyle(SizeType.Percent, 100.0F))
+
+        Dim lblCustomer As New Label() With {
+            .Text = "Select Customer",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 10.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
+
+        Dim customerPanel As New Panel() With {.Dock = DockStyle.Fill}
+        lblSearchIcon.Text = "🔍"
+        lblSearchIcon.AutoSize = True
+        lblSearchIcon.Font = New Font("Segoe UI Emoji", 10.0F, FontStyle.Regular)
+        lblSearchIcon.Left = 8
+        lblSearchIcon.Top = 10
+
+        cboCustomer.Left = 34
+        cboCustomer.Top = 6
+        cboCustomer.Width = 300
         cboCustomer.DropDownStyle = ComboBoxStyle.DropDown
         cboCustomer.AutoCompleteMode = AutoCompleteMode.SuggestAppend
         cboCustomer.AutoCompleteSource = AutoCompleteSource.ListItems
+        cboCustomer.Font = New Font("Segoe UI", 10.0F, FontStyle.Regular)
         AddHandler cboCustomer.SelectedIndexChanged, AddressOf cboCustomer_SelectedIndexChanged
+        customerPanel.Controls.Add(lblSearchIcon)
+        customerPanel.Controls.Add(cboCustomer)
 
-        Dim lblNameTitle As New Label() With {.Text = "Customer Name", .Left = 20, .Top = 55, .AutoSize = True}
-        lblCustomerName.Left = 120
-        lblCustomerName.Top = 55
-        lblCustomerName.AutoSize = True
-        lblCustomerName.Text = "-"
+        Dim lblCustomerInfo As New Label() With {
+            .Text = "Customer Details",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 10.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
 
-        dgvBills.Left = 20
-        dgvBills.Top = 90
-        dgvBills.Width = 890
-        dgvBills.Height = 350
-        dgvBills.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        txtCustomerDetails.Dock = DockStyle.Fill
+        txtCustomerDetails.Multiline = True
+        txtCustomerDetails.ReadOnly = True
+        txtCustomerDetails.BackColor = ColorTranslator.FromHtml("#f8f9f9")
+        txtCustomerDetails.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        txtCustomerDetails.BorderStyle = BorderStyle.FixedSingle
+        txtCustomerDetails.Font = New Font("Segoe UI", 10.0F, FontStyle.Regular)
+
+        leftLayout.Controls.Add(lblCustomer, 0, 0)
+        leftLayout.Controls.Add(customerPanel, 0, 1)
+        leftLayout.Controls.Add(lblCustomerInfo, 0, 2)
+        leftLayout.Controls.Add(txtCustomerDetails, 0, 3)
+        pnlLeftCard.Controls.Add(leftLayout)
+
+        pnlRightCard.Dock = DockStyle.Fill
+        pnlRightCard.BackColor = Color.White
+        pnlRightCard.Padding = New Padding(16)
+
+        Dim rightLayout As New TableLayoutPanel()
+        rightLayout.Dock = DockStyle.Fill
+        rightLayout.ColumnCount = 4
+        rightLayout.RowCount = 6
+        rightLayout.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 24.0F))
+        rightLayout.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 26.0F))
+        rightLayout.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 22.0F))
+        rightLayout.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 28.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Percent, 100.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 42.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 28.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 42.0F))
+        rightLayout.RowStyles.Add(New RowStyle(SizeType.Absolute, 56.0F))
+
+        dgvBills.Dock = DockStyle.Fill
         dgvBills.AllowUserToAddRows = False
         dgvBills.AllowUserToDeleteRows = False
+        dgvBills.AllowUserToResizeRows = False
         dgvBills.SelectionMode = DataGridViewSelectionMode.FullRowSelect
         dgvBills.MultiSelect = False
         dgvBills.AutoGenerateColumns = False
+        dgvBills.BackgroundColor = Color.White
+        dgvBills.BorderStyle = BorderStyle.None
+        dgvBills.RowHeadersVisible = False
+        dgvBills.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        dgvBills.AlternatingRowsDefaultCellStyle.BackColor = ColorTranslator.FromHtml("#f8f9f9")
 
         Dim colSelect As New DataGridViewCheckBoxColumn() With {
             .Name = "colSelect",
@@ -95,56 +205,90 @@ Public Class frmPayment
         AddHandler dgvBills.CurrentCellDirtyStateChanged, AddressOf dgvBills_CurrentCellDirtyStateChanged
         AddHandler dgvBills.CellValueChanged, AddressOf dgvBills_CellValueChanged
 
-        Dim lblAmountPaid As New Label() With {.Text = "Amount Paid", .Left = 20, .Top = 440, .AutoSize = True}
-        txtAmountPaid.Left = 120
-        txtAmountPaid.Top = 458
-        txtAmountPaid.Width = 150
-        txtAmountPaid.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        Dim lblTotal As New Label() With {
+            .Text = "Total Amount",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 10.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
 
-        Dim lblPaymentMode As New Label() With {.Text = "Payment Mode", .Left = 300, .Top = 440, .AutoSize = True}
-        cboPaymentMode.Left = 400
-        cboPaymentMode.Top = 458
-        cboPaymentMode.Width = 180
-        cboPaymentMode.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        lblTotalAmountValue.Text = "0.00"
+        lblTotalAmountValue.AutoSize = True
+        lblTotalAmountValue.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold)
+        lblTotalAmountValue.ForeColor = ColorTranslator.FromHtml("#27ae60")
+
+        Dim lblAmountPaid As New Label() With {
+            .Text = "Amount Paid",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
+        txtAmountPaid.Dock = DockStyle.Fill
+        txtAmountPaid.Font = New Font("Segoe UI", 10.0F, FontStyle.Regular)
+
+        Dim lblPaymentMode As New Label() With {
+            .Text = "Payment Mode",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
+        cboPaymentMode.Dock = DockStyle.Fill
         cboPaymentMode.DropDownStyle = ComboBoxStyle.DropDownList
         cboPaymentMode.Items.AddRange(New Object() {"Cash", "Bank Transfer", "Mobile Money", "Online"})
         cboPaymentMode.SelectedIndex = 0
 
-        Dim lblReference As New Label() With {.Text = "Reference", .Left = 610, .Top = 440, .AutoSize = True}
-        txtReference.Left = 680
-        txtReference.Top = 458
-        txtReference.Width = 230
-        txtReference.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
+        Dim lblReference As New Label() With {
+            .Text = "Reference",
+            .AutoSize = True,
+            .Font = New Font("Segoe UI", 9.0F, FontStyle.Bold),
+            .ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        }
+        txtReference.Dock = DockStyle.Fill
 
         btnProcessPayment.Text = "Process Payment"
-        btnProcessPayment.Left = 120
-        btnProcessPayment.Top = 505
-        btnProcessPayment.Width = 180
-        btnProcessPayment.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+        btnProcessPayment.Dock = DockStyle.Right
+        btnProcessPayment.Width = 220
+        btnProcessPayment.Height = 44
+        btnProcessPayment.FlatStyle = FlatStyle.Flat
+        btnProcessPayment.FlatAppearance.BorderSize = 0
+        btnProcessPayment.BackColor = ColorTranslator.FromHtml("#27ae60")
+        btnProcessPayment.ForeColor = Color.White
+        btnProcessPayment.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         AddHandler btnProcessPayment.Click, AddressOf btnProcessPayment_Click
 
-        btnLogout.Visible = False
+        rightLayout.Controls.Add(dgvBills, 0, 0)
+        rightLayout.SetColumnSpan(dgvBills, 4)
+        rightLayout.Controls.Add(lblTotal, 0, 1)
+        rightLayout.Controls.Add(lblTotalAmountValue, 1, 1)
+        rightLayout.Controls.Add(lblAmountPaid, 0, 2)
+        rightLayout.Controls.Add(txtAmountPaid, 1, 2)
+        rightLayout.Controls.Add(lblPaymentMode, 2, 2)
+        rightLayout.Controls.Add(cboPaymentMode, 3, 2)
+        rightLayout.Controls.Add(lblReference, 0, 3)
+        rightLayout.Controls.Add(txtReference, 1, 3)
+        rightLayout.SetColumnSpan(txtReference, 3)
 
-        UiStyleHelper.StyleForm(Me)
-        UiStyleHelper.StyleDataGrid(dgvBills)
-        UiStyleHelper.StyleButton(btnProcessPayment, True)
-        UiStyleHelper.StyleButton(btnLogout)
+        Dim buttonHost As New Panel() With {.Dock = DockStyle.Fill}
+        buttonHost.Controls.Add(btnProcessPayment)
+        btnProcessPayment.Top = 6
+        btnProcessPayment.Left = buttonHost.Width - btnProcessPayment.Width
+        AddHandler buttonHost.Resize,
+            Sub()
+                btnProcessPayment.Left = buttonHost.Width - btnProcessPayment.Width
+            End Sub
+        rightLayout.Controls.Add(buttonHost, 0, 5)
+        rightLayout.SetColumnSpan(buttonHost, 4)
 
-        Me.Controls.Add(lblCustomer)
-        Me.Controls.Add(cboCustomer)
-        Me.Controls.Add(lblNameTitle)
-        Me.Controls.Add(lblCustomerName)
-        Me.Controls.Add(dgvBills)
-        Me.Controls.Add(lblAmountPaid)
-        Me.Controls.Add(txtAmountPaid)
-        Me.Controls.Add(lblPaymentMode)
-        Me.Controls.Add(cboPaymentMode)
-        Me.Controls.Add(lblReference)
-        Me.Controls.Add(txtReference)
-        Me.Controls.Add(btnProcessPayment)
-        Me.Controls.Add(btnLogout)
+        pnlRightCard.Controls.Add(rightLayout)
+
+        splitMain.Panel1.Controls.Add(pnlLeftCard)
+        splitMain.Panel2.Controls.Add(pnlRightCard)
+
+        Me.Controls.Add(splitMain)
+        Me.Controls.Add(pnlTopBar)
 
         AddHandler Me.Load, AddressOf frmPayment_Load
+        AddHandler Me.Resize, AddressOf frmPayment_Resize
     End Sub
 
     Private Sub frmPayment_Load(sender As Object, e As EventArgs)
@@ -166,6 +310,11 @@ Public Class frmPayment
         End If
     End Sub
 
+    Private Sub frmPayment_Resize(sender As Object, e As EventArgs)
+        btnLogout.Left = pnlTopBar.ClientSize.Width - btnLogout.Width - 20
+        splitMain.SplitterDistance = Math.Max(320, CInt(Me.ClientSize.Width * 0.35))
+    End Sub
+
     Private Sub SelectCustomerById(customerId As Integer)
         For i As Integer = 0 To cboCustomer.Items.Count - 1
             Dim item As CustomerItem = TryCast(cboCustomer.Items(i), CustomerItem)
@@ -180,14 +329,15 @@ Public Class frmPayment
         Try
             cboCustomer.Items.Clear()
 
-            Const sql As String = "SELECT c.id AS customer_id, c.meter_number, u.full_name FROM customers c INNER JOIN users u ON c.id = u.id WHERE u.role = 'customer' ORDER BY u.full_name;"
+            Const sql As String = "SELECT c.id AS customer_id, c.meter_number, c.address, u.full_name FROM customers c INNER JOIN users u ON c.id = u.id WHERE u.role = 'customer' ORDER BY u.full_name;"
             Dim data As DataTable = DatabaseHelper.ExecuteDataTable(sql)
 
             For Each row As DataRow In data.Rows
                 Dim item As New CustomerItem With {
                     .CustomerId = Convert.ToInt32(row("customer_id")),
                     .FullName = row("full_name").ToString(),
-                    .MeterNumber = row("meter_number").ToString()
+                    .MeterNumber = row("meter_number").ToString(),
+                    .Address = row("address").ToString()
                 }
                 cboCustomer.Items.Add(item)
             Next
@@ -207,14 +357,15 @@ Public Class frmPayment
         Dim selected As CustomerItem = TryCast(cboCustomer.SelectedItem, CustomerItem)
         If selected Is Nothing Then
             txtCustomerId.Text = String.Empty
-            lblCustomerName.Text = "-"
+            txtCustomerDetails.Text = "-"
             dgvBills.Rows.Clear()
             txtAmountPaid.Text = "0.00"
+            lblTotalAmountValue.Text = "0.00"
             Return
         End If
 
         txtCustomerId.Text = selected.CustomerId.ToString()
-        lblCustomerName.Text = selected.FullName
+        txtCustomerDetails.Text = $"Name: {selected.FullName}{Environment.NewLine}Meter: {selected.MeterNumber}{Environment.NewLine}Address: {selected.Address}"
 
         LoadUnpaidBills(selected.CustomerId)
     End Sub
@@ -280,6 +431,7 @@ Public Class frmPayment
             End If
         Next
 
+        lblTotalAmountValue.Text = totalSelected.ToString("N2")
         txtAmountPaid.Text = totalSelected.ToString("0.00")
     End Sub
 
@@ -421,13 +573,14 @@ Public Class frmPayment
     End Sub
 
     Private Sub btnLogout_Click(sender As Object, e As EventArgs)
-        SessionManager.Logout(Me)
+        Me.Close()
     End Sub
 
     Private Class CustomerItem
         Public Property CustomerId As Integer
         Public Property FullName As String
         Public Property MeterNumber As String
+        Public Property Address As String
 
         Public Overrides Function ToString() As String
             Return $"{MeterNumber} - {FullName}"

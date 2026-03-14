@@ -1,3 +1,5 @@
+Imports System.Linq
+
 Public NotInheritable Class UiStyleHelper
     Private Sub New()
     End Sub
@@ -39,5 +41,35 @@ Public NotInheritable Class UiStyleHelper
             btn.BackColor = Color.FromArgb(230, 236, 245)
             btn.ForeColor = Color.FromArgb(40, 40, 40)
         End If
+    End Sub
+
+    Public Shared Sub AddDialogCloseButton(frm As Form)
+        If frm.Controls.OfType(Of Button)().Any(Function(b) String.Equals(Convert.ToString(b.Tag), "DialogCloseButton", StringComparison.Ordinal)) Then
+            Return
+        End If
+
+        Dim btnClose As New Button() With {
+            .Text = "Close",
+            .Size = New Size(100, 35),
+            .BackColor = Color.FromArgb(231, 76, 60),
+            .ForeColor = Color.White,
+            .FlatStyle = FlatStyle.Flat,
+            .Font = New Font("Segoe UI", 10, FontStyle.Bold),
+            .Anchor = AnchorStyles.Bottom Or AnchorStyles.Right,
+            .Tag = "DialogCloseButton"
+        }
+        btnClose.FlatAppearance.BorderSize = 0
+
+        Dim placeButton As Action =
+            Sub()
+                btnClose.Location = New Point(Math.Max(0, frm.ClientSize.Width - 120), Math.Max(0, frm.ClientSize.Height - 60))
+            End Sub
+
+        AddHandler frm.Resize, Sub() placeButton()
+        AddHandler btnClose.Click, Sub(sender, e) frm.Close()
+
+        placeButton()
+        frm.Controls.Add(btnClose)
+        btnClose.BringToFront()
     End Sub
 End Class

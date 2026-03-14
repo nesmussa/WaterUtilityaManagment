@@ -3,9 +3,12 @@ Imports System.Diagnostics
 Public Class frmBackupRestore
     Inherits Form
 
+    Private ReadOnly pnlHeader As New Panel()
+    Private ReadOnly lblHeader As New Label()
     Private ReadOnly btnBackup As New Button()
     Private ReadOnly btnRestore As New Button()
-    Private ReadOnly btnLogout As New Button()
+    Private ReadOnly lblLastBackup As New Label()
+    Private ReadOnly progressOperation As New ProgressBar()
 
     Public Sub New()
         InitializeComponent()
@@ -13,38 +16,72 @@ Public Class frmBackupRestore
 
     Private Sub InitializeComponent()
         Me.Text = "Backup / Restore"
-        Me.StartPosition = FormStartPosition.CenterScreen
-        Me.Width = 380
-        Me.Height = 170
-        Me.MinimumSize = New Size(380, 170)
+        Me.StartPosition = FormStartPosition.CenterParent
+        Me.ClientSize = New Size(500, 300)
+        Me.MinimumSize = New Size(500, 300)
+        Me.MaximumSize = New Size(500, 300)
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+        Me.MinimizeBox = False
+        Me.ShowInTaskbar = False
+        Me.BackColor = Color.White
+        Me.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular)
 
-        btnBackup.Text = "Backup Database"
-        btnBackup.Left = 30
-        btnBackup.Top = 40
-        btnBackup.Width = 140
+        pnlHeader.Dock = DockStyle.Top
+        pnlHeader.Height = 54
+        pnlHeader.BackColor = ColorTranslator.FromHtml("#3498db")
+
+        lblHeader.Dock = DockStyle.Fill
+        lblHeader.Text = "Backup & Restore Utility"
+        lblHeader.TextAlign = ContentAlignment.MiddleCenter
+        lblHeader.Font = New Font("Segoe UI", 14.0F, FontStyle.Bold)
+        lblHeader.ForeColor = Color.White
+        pnlHeader.Controls.Add(lblHeader)
+
+        btnBackup.Text = "💾 Backup Database"
+        btnBackup.Left = 38
+        btnBackup.Top = 86
+        btnBackup.Width = 200
+        btnBackup.Height = 72
+        btnBackup.FlatStyle = FlatStyle.Flat
+        btnBackup.FlatAppearance.BorderSize = 0
+        btnBackup.BackColor = ColorTranslator.FromHtml("#3498db")
+        btnBackup.ForeColor = Color.White
+        btnBackup.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         AddHandler btnBackup.Click, AddressOf btnBackup_Click
 
-        btnRestore.Text = "Restore Database"
-        btnRestore.Left = 190
-        btnRestore.Top = 40
-        btnRestore.Width = 140
+        btnRestore.Text = "📂 Restore Database"
+        btnRestore.Left = 258
+        btnRestore.Top = 86
+        btnRestore.Width = 200
+        btnRestore.Height = 72
+        btnRestore.FlatStyle = FlatStyle.Flat
+        btnRestore.FlatAppearance.BorderSize = 0
+        btnRestore.BackColor = ColorTranslator.FromHtml("#e67e22")
+        btnRestore.ForeColor = Color.White
+        btnRestore.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         AddHandler btnRestore.Click, AddressOf btnRestore_Click
 
-        btnLogout.Text = "Logout"
-        btnLogout.Left = 110
-        btnLogout.Top = 90
-        btnLogout.Width = 140
-        btnLogout.Visible = False
-        AddHandler btnLogout.Click, AddressOf btnLogout_Click
+        lblLastBackup.Left = 40
+        lblLastBackup.Top = 176
+        lblLastBackup.Width = 420
+        lblLastBackup.Height = 38
+        lblLastBackup.ForeColor = ColorTranslator.FromHtml("#2c3e50")
+        lblLastBackup.Text = "Last Backup: Not available"
 
-        UiStyleHelper.StyleForm(Me)
-        UiStyleHelper.StyleButton(btnBackup, True)
-        UiStyleHelper.StyleButton(btnRestore)
-        UiStyleHelper.StyleButton(btnLogout)
+        progressOperation.Left = 40
+        progressOperation.Top = 230
+        progressOperation.Width = 420
+        progressOperation.Height = 16
+        progressOperation.Style = ProgressBarStyle.Marquee
+        progressOperation.MarqueeAnimationSpeed = 25
+        progressOperation.Visible = False
 
+        Me.Controls.Add(pnlHeader)
         Me.Controls.Add(btnBackup)
         Me.Controls.Add(btnRestore)
-        Me.Controls.Add(btnLogout)
+        Me.Controls.Add(lblLastBackup)
+        Me.Controls.Add(progressOperation)
 
         AddHandler Me.Load, AddressOf frmBackupRestore_Load
     End Sub
@@ -56,11 +93,10 @@ Public Class frmBackupRestore
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Warning)
             Me.Close()
+            Return
         End If
-    End Sub
 
-    Private Sub btnLogout_Click(sender As Object, e As EventArgs)
-        SessionManager.Logout(Me)
+        UiStyleHelper.AddDialogCloseButton(Me)
     End Sub
 
     Private Sub btnBackup_Click(sender As Object, e As EventArgs)
@@ -71,7 +107,7 @@ Public Class frmBackupRestore
 
         Dim connInfo = ParseConnectionInfo(DatabaseHelper.GetConnectionString())
         Dim args As String = $"-h {connInfo.Host} -P {connInfo.Port} -u {connInfo.User} -p{connInfo.Password} {connInfo.Database} --result-file=""{sfd.FileName}"""
-        ExecuteExternalCommand("mysqldump", args, "Backup completed.")
+        ExecuteExternalCommand("mysqldump", args, "Backup completed.", sfd.FileName)
     End Sub
 
     Private Sub btnRestore_Click(sender As Object, e As EventArgs)
@@ -85,8 +121,15 @@ Public Class frmBackupRestore
         ExecuteExternalCommand("mysql", args, "Restore completed.")
     End Sub
 
-    Private Shared Sub ExecuteExternalCommand(fileName As String, arguments As String, successMessage As String)
+    Private Sub ExecuteExternalCommand(fileName As String,
+                                       arguments As String,
+                                       successMessage As String,
+                                       Optional backupPath As String = Nothing)
         Try
+            progressOperation.Visible = True
+            btnBackup.Enabled = False
+            btnRestore.Enabled = False
+
             Dim psi As New ProcessStartInfo(fileName, arguments) With {
                 .CreateNoWindow = True,
                 .UseShellExecute = False,
@@ -102,9 +145,17 @@ Public Class frmBackupRestore
                 End If
             End Using
 
+            If Not String.IsNullOrWhiteSpace(backupPath) Then
+                lblLastBackup.Text = $"Last Backup: {Date.Now:yyyy-MM-dd HH:mm}  |  {backupPath}"
+            End If
+
             MessageBox.Show(successMessage, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
         Catch ex As Exception
             MessageBox.Show("Operation failed: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        Finally
+            progressOperation.Visible = False
+            btnBackup.Enabled = True
+            btnRestore.Enabled = True
         End Try
     End Sub
 

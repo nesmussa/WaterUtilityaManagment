@@ -29,6 +29,7 @@ Public Class frmEnterReading
     Private ReadOnly btnViewBills As New Button()
     Private ReadOnly btnMyActivity As New Button()
     Private ReadOnly btnChangePassword As New Button()
+    Private ReadOnly btnProfile As New Button()
     Private ReadOnly btnLogout As New Button()
     Private ReadOnly err As New ErrorProvider()
     Private ReadOnly tips As New ToolTip()
@@ -76,7 +77,21 @@ Public Class frmEnterReading
         btnLogout.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
 
+        btnProfile.Text = "My Profile"
+        btnProfile.Width = 110
+        btnProfile.Height = 34
+        btnProfile.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnProfile.Left = btnLogout.Left - btnProfile.Width - 8
+        btnProfile.Top = 12
+        btnProfile.FlatStyle = FlatStyle.Flat
+        btnProfile.FlatAppearance.BorderSize = 0
+        btnProfile.BackColor = ColorTranslator.FromHtml("#3498db")
+        btnProfile.ForeColor = Color.White
+        btnProfile.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        AddHandler btnProfile.Click, AddressOf btnProfile_Click
+
         pnlTopBar.Controls.Add(lblStaffName)
+        pnlTopBar.Controls.Add(btnProfile)
         pnlTopBar.Controls.Add(btnLogout)
 
         splitMain.Dock = DockStyle.Fill
@@ -348,7 +363,7 @@ Public Class frmEnterReading
             Return
         End If
 
-        lblStaffName.Text = $"Staff: {CurrentUser.Username}"
+        lblStaffName.Text = GetStaffDisplayText()
         tips.SetToolTip(txtNewReading, "Enter a positive reading")
 
         LoadCustomers()
@@ -358,8 +373,14 @@ Public Class frmEnterReading
 
     Private Sub frmEnterReading_Resize(sender As Object, e As EventArgs)
         btnLogout.Left = pnlTopBar.ClientSize.Width - btnLogout.Width - 20
+        btnProfile.Left = btnLogout.Left - btnProfile.Width - 8
         splitMain.SplitterDistance = Math.Max(340, CInt(Me.ClientSize.Width * 0.3))
     End Sub
+
+    Private Function GetStaffDisplayText() As String
+        Dim displayName As String = If(String.IsNullOrWhiteSpace(CurrentUser.FullName), CurrentUser.Username, CurrentUser.FullName)
+        Return $"Staff: {displayName}"
+    End Function
 
     Private Shared Sub StyleQuickActionButton(button As Button, icon As String)
         button.FlatStyle = FlatStyle.Flat
@@ -572,6 +593,14 @@ Public Class frmEnterReading
     Private Sub btnChangePassword_Click(sender As Object, e As EventArgs)
         Using frm As New frmChangePassword()
             frm.ShowDialog(Me)
+        End Using
+    End Sub
+
+    Private Sub btnProfile_Click(sender As Object, e As EventArgs)
+        Using frm As New frmProfileSettings()
+            If frm.ShowDialog(Me) = DialogResult.OK Then
+                lblStaffName.Text = GetStaffDisplayText()
+            End If
         End Using
     End Sub
 

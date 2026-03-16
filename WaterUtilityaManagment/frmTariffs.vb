@@ -4,7 +4,6 @@ Public Class frmTariffs
     Inherits Form
 
     Private ReadOnly dgvTariffs As New DataGridView()
-    Private ReadOnly btnAdd As New Button()
     Private ReadOnly btnEdit As New Button()
     Private ReadOnly btnDeactivate As New Button()
     Private ReadOnly btnLogout As New Button()
@@ -85,16 +84,6 @@ Public Class frmTariffs
         AddHandler dgvTariffs.CellFormatting, AddressOf dgvTariffs_CellFormatting
         AddHandler dgvTariffs.CellDoubleClick, AddressOf dgvTariffs_CellDoubleClick
 
-        btnAdd.Text = "➕ Add"
-        btnAdd.Width = 150
-        btnAdd.Height = 38
-        btnAdd.FlatStyle = FlatStyle.Flat
-        btnAdd.FlatAppearance.BorderSize = 0
-        btnAdd.BackColor = ColorTranslator.FromHtml("#3498db")
-        btnAdd.ForeColor = Color.White
-        btnAdd.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
-        AddHandler btnAdd.Click, AddressOf btnAdd_Click
-
         btnEdit.Text = "✏ Edit"
         btnEdit.Width = 130
         btnEdit.Height = 38
@@ -121,7 +110,6 @@ Public Class frmTariffs
         actionPanel.Padding = New Padding(0, 4, 0, 0)
         actionPanel.FlowDirection = FlowDirection.LeftToRight
         actionPanel.WrapContents = False
-        actionPanel.Controls.Add(btnAdd)
         actionPanel.Controls.Add(btnEdit)
         actionPanel.Controls.Add(btnDeactivate)
 

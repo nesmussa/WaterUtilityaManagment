@@ -1,4 +1,6 @@
 Imports System.Diagnostics
+Imports System.IO
+Imports System.ComponentModel
 
 Public Class frmBackupRestore
     Inherits Form
@@ -107,7 +109,13 @@ Public Class frmBackupRestore
 
         Dim connInfo = ParseConnectionInfo(DatabaseHelper.GetConnectionString())
         Dim args As String = $"-h {connInfo.Host} -P {connInfo.Port} -u {connInfo.User} -p{connInfo.Password} {connInfo.Database} --result-file=""{sfd.FileName}"""
-        ExecuteExternalCommand("mysqldump", args, "Backup completed.", sfd.FileName)
+        Dim dumpPath As String = ResolveExecutablePath("mysqldump")
+        If String.IsNullOrWhiteSpace(dumpPath) Then
+            ShowExecutableNotFoundMessage("mysqldump.exe")
+            Return
+        End If
+
+        ExecuteExternalCommand(dumpPath, args, "Backup completed.", sfd.FileName)
     End Sub
 
     Private Sub btnRestore_Click(sender As Object, e As EventArgs)
@@ -118,7 +126,13 @@ Public Class frmBackupRestore
 
         Dim connInfo = ParseConnectionInfo(DatabaseHelper.GetConnectionString())
         Dim args As String = $"-h {connInfo.Host} -P {connInfo.Port} -u {connInfo.User} -p{connInfo.Password} {connInfo.Database} -e ""source {ofd.FileName.Replace("\", "/")}"""
-        ExecuteExternalCommand("mysql", args, "Restore completed.")
+        Dim mysqlPath As String = ResolveExecutablePath("mysql")
+        If String.IsNullOrWhiteSpace(mysqlPath) Then
+            ShowExecutableNotFoundMessage("mysql.exe")
+            Return
+        End If
+
+        ExecuteExternalCommand(mysqlPath, args, "Restore completed.")
     End Sub
 
     Private Sub ExecuteExternalCommand(fileName As String,
@@ -150,6 +164,11 @@ Public Class frmBackupRestore
             End If
 
             MessageBox.Show(successMessage, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Catch ex As Win32Exception When ex.NativeErrorCode = 2
+            MessageBox.Show($"Required executable was not found: {Path.GetFileName(fileName)}.{Environment.NewLine}{Environment.NewLine}Please install MySQL client tools or provide the executable in a standard installation path.",
+                            "Executable Not Found",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error)
         Catch ex As Exception
             MessageBox.Show("Operation failed: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         Finally
@@ -157,6 +176,64 @@ Public Class frmBackupRestore
             btnBackup.Enabled = True
             btnRestore.Enabled = True
         End Try
+    End Sub
+
+    Private Shared Function ResolveExecutablePath(executableName As String) As String
+        Dim exeName As String = If(executableName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase), executableName, executableName & ".exe")
+        Dim candidates As New List(Of String) From {
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exeName),
+            Path.Combine("C:\xampp\mysql\bin", exeName),
+            Path.Combine("C:\Program Files\MySQL\MySQL Server 8.0\bin", exeName),
+            Path.Combine("C:\Program Files\MySQL\MySQL Server 8.4\bin", exeName),
+            Path.Combine("C:\Program Files\MySQL\MySQL Server 5.7\bin", exeName),
+            Path.Combine("C:\Program Files (x86)\MySQL\MySQL Server 8.0\bin", exeName),
+            Path.Combine("C:\Program Files (x86)\MySQL\MySQL Server 5.7\bin", exeName)
+        }
+
+        AddExecutableCandidatesFromDirectory(candidates, "C:\Program Files\MySQL", "MySQL Server *", "bin", exeName)
+        AddExecutableCandidatesFromDirectory(candidates, "C:\Program Files (x86)\MySQL", "MySQL Server *", "bin", exeName)
+        AddExecutableCandidatesFromDirectory(candidates, "C:\wamp64\bin\mysql", "mysql*", "bin", exeName)
+        AddExecutableCandidatesFromDirectory(candidates, "C:\wamp\bin\mysql", "mysql*", "bin", exeName)
+
+        Dim pathValue As String = Environment.GetEnvironmentVariable("PATH")
+        If Not String.IsNullOrWhiteSpace(pathValue) Then
+            For Each folder As String In pathValue.Split(";"c)
+                If String.IsNullOrWhiteSpace(folder) Then
+                    Continue For
+                End If
+
+                candidates.Add(Path.Combine(folder.Trim(), exeName))
+            Next
+        End If
+
+        For Each candidate As String In candidates
+            If File.Exists(candidate) Then
+                Return candidate
+            End If
+        Next
+
+        Return Nothing
+    End Function
+
+    Private Shared Sub AddExecutableCandidatesFromDirectory(candidates As List(Of String),
+                                                            rootPath As String,
+                                                            directoryPattern As String,
+                                                            binFolder As String,
+                                                            exeName As String)
+        If Not Directory.Exists(rootPath) Then
+            Return
+        End If
+
+        For Each dir As String In Directory.GetDirectories(rootPath, directoryPattern)
+            candidates.Add(Path.Combine(dir, binFolder, exeName))
+        Next
+    End Sub
+
+    Private Shared Sub ShowExecutableNotFoundMessage(executableName As String)
+        MessageBox.Show($"Could not find {executableName}.{Environment.NewLine}{Environment.NewLine}Please locate or install MySQL client tools (MySQL Server/XAMPP/WAMP), then try again.",
+                        "Executable Not Found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning)
     End Sub
 
     Private Shared Function ParseConnectionInfo(connectionString As String) As (Host As String, Port As String, User As String, Password As String, Database As String)

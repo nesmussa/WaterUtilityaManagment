@@ -4,11 +4,13 @@ Public NotInheritable Class CurrentUser
 
     Public Shared Property UserId As Integer
     Public Shared Property Username As String
+    Public Shared Property FullName As String
     Public Shared Property Role As String
 
     Public Shared Sub Clear()
         UserId = 0
         Username = Nothing
+        FullName = Nothing
         Role = Nothing
     End Sub
 End Class

@@ -1,5 +1,3 @@
-Imports System.Drawing.Printing
-
 Public Class frmReports
     Inherits Form
 
@@ -44,10 +42,9 @@ Public Class frmReports
     Private ReadOnly btnExportExcel As New Button()
     Private ReadOnly btnExportPdf As New Button()
     Private ReadOnly btnManageStaff As New Button()
+    Private ReadOnly btnProfile As New Button()
     Private ReadOnly btnLogout As New Button()
 
-    Private _printRows As List(Of String)
-    Private _printIndex As Integer
     Private _paidTotalSummary As Decimal
     Private _unpaidTotalSummary As Decimal
     Private _partialTotalSummary As Decimal
@@ -87,6 +84,19 @@ Public Class frmReports
         btnLogout.ForeColor = Color.White
         btnLogout.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
         AddHandler btnLogout.Click, AddressOf btnLogout_Click
+
+        btnProfile.Text = "My Profile"
+        btnProfile.Width = 110
+        btnProfile.Height = 34
+        btnProfile.Left = btnLogout.Left - btnProfile.Width - 8
+        btnProfile.Top = 10
+        btnProfile.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnProfile.FlatStyle = FlatStyle.Flat
+        btnProfile.FlatAppearance.BorderSize = 0
+        btnProfile.BackColor = ColorTranslator.FromHtml("#3498db")
+        btnProfile.ForeColor = Color.White
+        btnProfile.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        AddHandler btnProfile.Click, AddressOf btnProfile_Click
 
         pnlStatCustomers.BackColor = ColorTranslator.FromHtml("#3498db")
         pnlStatCustomers.Width = 280
@@ -128,6 +138,7 @@ Public Class frmReports
         pnlStatRevenue.Controls.Add(lblStatRevenue)
 
         pnlTopBar.Controls.Add(lblWelcome)
+        pnlTopBar.Controls.Add(btnProfile)
         pnlTopBar.Controls.Add(btnLogout)
         pnlTopBar.Controls.Add(pnlStatCustomers)
         pnlTopBar.Controls.Add(pnlStatUnpaid)
@@ -353,7 +364,7 @@ Public Class frmReports
             Return
         End If
 
-        lblWelcome.Text = $"Welcome, {CurrentUser.Username}"
+        lblWelcome.Text = GetWelcomeText()
         frmReports_Resize(Me, EventArgs.Empty)
 
         LoadPaidVsUnpaidSummary()
@@ -453,10 +464,16 @@ Public Class frmReports
 
     Private Sub frmReports_Resize(sender As Object, e As EventArgs)
         btnLogout.Left = pnlTopBar.ClientSize.Width - btnLogout.Width - 16
-        pnlStatRevenue.Left = pnlTopBar.ClientSize.Width - pnlStatRevenue.Width - btnLogout.Width - 34
+        btnProfile.Left = btnLogout.Left - btnProfile.Width - 8
+        pnlStatRevenue.Left = btnProfile.Left - pnlStatRevenue.Width - 14
         pnlStatUnpaid.Left = pnlStatRevenue.Left - pnlStatUnpaid.Width - 12
         pnlStatCustomers.Left = pnlStatUnpaid.Left - pnlStatCustomers.Width - 12
     End Sub
+
+    Private Function GetWelcomeText() As String
+        Dim displayName As String = If(String.IsNullOrWhiteSpace(CurrentUser.FullName), CurrentUser.Username, CurrentUser.FullName)
+        Return $"Welcome, {displayName}"
+    End Function
 
     Private Shared Sub StyleActionTile(button As Button, backColor As Color)
         button.FlatStyle = FlatStyle.Flat
@@ -657,22 +674,19 @@ Public Class frmReports
             Return
         End If
 
-        PreparePrintRows(activeGrid)
-        If _printRows.Count = 0 Then
-            MessageBox.Show("No rows to print.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            Return
-        End If
-
-        Dim printDoc As New PrintDocument()
-        AddHandler printDoc.PrintPage, AddressOf printDoc_PrintPage
-
-        Using pd As New PrintDialog()
-            pd.Document = printDoc
-            pd.UseEXDialog = True
-            If pd.ShowDialog(Me) = DialogResult.OK Then
-                printDoc.Print()
+        Try
+            GridExportHelper.ExportDataGridViewToPdf(activeGrid, Me, GetActiveReportTitle())
+        Catch ex As Exception
+            Dim details As String = ex.Message
+            If ex.InnerException IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(ex.InnerException.Message) Then
+                details &= Environment.NewLine & ex.InnerException.Message
             End If
-        End Using
+
+            MessageBox.Show("Failed to export PDF: " & details,
+                            "Export",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error)
+        End Try
     End Sub
 
     Private Function GetActiveReportGrid() As DataGridView
@@ -690,51 +704,20 @@ Public Class frmReports
         End Select
     End Function
 
-    Private Sub PreparePrintRows(grid As DataGridView)
-        _printRows = New List(Of String)()
-        _printIndex = 0
-
-        Dim header As New List(Of String)()
-        For Each col As DataGridViewColumn In grid.Columns
-            If col.Visible Then
-                header.Add(col.HeaderText)
-            End If
-        Next
-        _printRows.Add(String.Join(" | ", header))
-
-        For Each row As DataGridViewRow In grid.Rows
-            If row.IsNewRow Then
-                Continue For
-            End If
-
-            Dim values As New List(Of String)()
-            For Each col As DataGridViewColumn In grid.Columns
-                If col.Visible Then
-                    values.Add(If(row.Cells(col.Index).Value?.ToString(), String.Empty))
-                End If
-            Next
-
-            _printRows.Add(String.Join(" | ", values))
-        Next
-    End Sub
-
-    Private Sub printDoc_PrintPage(sender As Object, e As PrintPageEventArgs)
-        Dim y As Single = e.MarginBounds.Top
-        Dim lineHeight As Single = e.Graphics.MeasureString("X", Me.Font).Height + 4
-
-        While _printIndex < _printRows.Count
-            If y + lineHeight > e.MarginBounds.Bottom Then
-                e.HasMorePages = True
-                Return
-            End If
-
-            e.Graphics.DrawString(_printRows(_printIndex), Me.Font, Brushes.Black, e.MarginBounds.Left, y)
-            y += lineHeight
-            _printIndex += 1
-        End While
-
-        e.HasMorePages = False
-    End Sub
+    Private Function GetActiveReportTitle() As String
+        Select Case tabReports.SelectedIndex
+            Case 0
+                Return "Paid vs Unpaid Summary"
+            Case 1
+                Return "Revenue by Period"
+            Case 2
+                Return "Outstanding Balances"
+            Case 3
+                Return "Staff Activity"
+            Case Else
+                Return "Report"
+        End Select
+    End Function
 
     Private Sub LoadRevenueByPeriod()
         Try
@@ -795,5 +778,13 @@ Public Class frmReports
 
     Private Sub btnLogout_Click(sender As Object, e As EventArgs)
         SessionManager.Logout(Me)
+    End Sub
+
+    Private Sub btnProfile_Click(sender As Object, e As EventArgs)
+        Using frm As New frmProfileSettings()
+            If frm.ShowDialog(Me) = DialogResult.OK Then
+                lblWelcome.Text = GetWelcomeText()
+            End If
+        End Using
     End Sub
 End Class

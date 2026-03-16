@@ -14,6 +14,7 @@ Public Class frmAddUser
     Private ReadOnly progressPasswordStrength As New ProgressBar()
     Private ReadOnly btnSave As New Button()
     Private ReadOnly btnCancel As New Button()
+    Private ReadOnly err As New ErrorProvider()
     Private ReadOnly _staffOnly As Boolean
     Private ReadOnly _isEditMode As Boolean
 
@@ -148,11 +149,16 @@ Public Class frmAddUser
 
         AddHandler btnTogglePassword.Click, AddressOf btnTogglePassword_Click
         AddHandler txtPassword.TextChanged, AddressOf txtPassword_TextChanged
+        AddHandler txtEmail.Leave, AddressOf txtEmail_Leave
+        AddHandler txtPhone.Leave, AddressOf txtPhone_Leave
         AddHandler btnSave.Click, AddressOf btnSave_Click
         AddHandler btnCancel.Click, AddressOf btnCancel_Click
 
         Me.AcceptButton = btnSave
         Me.CancelButton = btnCancel
+
+        err.BlinkStyle = ErrorBlinkStyle.NeverBlink
+        err.ContainerControl = Me
     End Sub
 
     Private Sub btnTogglePassword_Click(sender As Object, e As EventArgs)
@@ -177,12 +183,14 @@ Public Class frmAddUser
     End Function
 
     Private Sub btnSave_Click(sender As Object, e As EventArgs)
+        err.Clear()
+
         UsernameValue = txtUsername.Text.Trim()
         PasswordValue = txtPassword.Text
         RoleValue = cboRole.Text
         FullNameValue = txtFullName.Text.Trim()
         EmailValue = txtEmail.Text.Trim()
-        PhoneValue = txtPhone.Text.Trim()
+        PhoneValue = ValidationHelper.NormalizePhone(txtPhone.Text)
 
         If String.IsNullOrWhiteSpace(UsernameValue) OrElse
            (Not _isEditMode AndAlso String.IsNullOrWhiteSpace(PasswordValue)) OrElse
@@ -195,9 +203,68 @@ Public Class frmAddUser
             Return
         End If
 
+        Dim emailError As String = ValidateEmailField()
+        If Not String.IsNullOrWhiteSpace(emailError) Then
+            err.SetError(txtEmail, emailError)
+            MessageBox.Show(emailError, "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            txtEmail.Focus()
+            Return
+        End If
+
+        Dim phoneError As String = ValidatePhoneField()
+        If Not String.IsNullOrWhiteSpace(phoneError) Then
+            err.SetError(txtPhone, phoneError)
+            MessageBox.Show(phoneError, "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            txtPhone.Focus()
+            Return
+        End If
+
+        If String.IsNullOrWhiteSpace(PhoneValue) Then
+            err.SetError(txtPhone, "Phone number is required.")
+            MessageBox.Show("Phone number is required.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            txtPhone.Focus()
+            Return
+        End If
+
         Me.DialogResult = DialogResult.OK
         Me.Close()
     End Sub
+
+    Private Sub txtEmail_Leave(sender As Object, e As EventArgs)
+        Dim emailError As String = ValidateEmailField()
+        err.SetError(txtEmail, emailError)
+    End Sub
+
+    Private Sub txtPhone_Leave(sender As Object, e As EventArgs)
+        Dim phoneError As String = ValidatePhoneField()
+        err.SetError(txtPhone, phoneError)
+    End Sub
+
+    Private Function ValidateEmailField() As String
+        Dim email As String = txtEmail.Text.Trim()
+        If String.IsNullOrWhiteSpace(email) Then
+            Return String.Empty
+        End If
+
+        If ValidationHelper.IsValidEmail(email) Then
+            Return String.Empty
+        End If
+
+        Return "Invalid email format. Example: user@example.com"
+    End Function
+
+    Private Function ValidatePhoneField() As String
+        Dim phone As String = txtPhone.Text.Trim()
+        If String.IsNullOrWhiteSpace(phone) Then
+            Return "Phone number is required."
+        End If
+
+        If ValidationHelper.IsValidEthiopianPhone(phone) Then
+            Return String.Empty
+        End If
+
+        Return "Invalid phone format. Use 09XXXXXXXX, 07XXXXXXXX, +2519XXXXXXXX, or +2517XXXXXXXX."
+    End Function
 
     Private Sub btnCancel_Click(sender As Object, e As EventArgs)
         Me.DialogResult = DialogResult.Cancel

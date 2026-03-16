@@ -408,7 +408,7 @@ Public Class frmLogin
                 Return
             End If
 
-            Const sql As String = "SELECT id AS user_id, username, password_hash, role, is_active, force_password_change FROM users WHERE username = @username LIMIT 1;"
+            Const sql As String = "SELECT id AS user_id, username, full_name, password_hash, role, is_active, force_password_change FROM users WHERE username = @username LIMIT 1;"
             Dim parameters As New Dictionary(Of String, Object) From {
                 {"@username", username}
             }
@@ -437,6 +437,7 @@ Public Class frmLogin
 
             CurrentUser.UserId = Convert.ToInt32(row("user_id"))
             CurrentUser.Username = row("username").ToString()
+            CurrentUser.FullName = If(row("full_name") Is DBNull.Value, String.Empty, row("full_name").ToString())
             CurrentUser.Role = row("role").ToString()
 
             Dim forcePasswordChange As Boolean = Convert.ToBoolean(If(row("force_password_change") Is DBNull.Value, False, row("force_password_change")))

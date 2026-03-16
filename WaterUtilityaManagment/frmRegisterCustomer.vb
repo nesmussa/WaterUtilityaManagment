@@ -12,6 +12,7 @@ Public Class frmRegisterCustomer
     Private ReadOnly txtInitialMeterReading As New TextBox()
     Private ReadOnly btnRegister As New Button()
     Private ReadOnly btnLogout As New Button()
+    Private ReadOnly err As New ErrorProvider()
 
     Public Sub New()
         InitializeComponent()
@@ -97,6 +98,11 @@ Public Class frmRegisterCustomer
         Me.Controls.Add(btnLogout)
 
         AddHandler Me.Load, AddressOf frmRegisterCustomer_Load
+        AddHandler txtEmail.Leave, AddressOf txtEmail_Leave
+        AddHandler txtPhone.Leave, AddressOf txtPhone_Leave
+
+        err.BlinkStyle = ErrorBlinkStyle.NeverBlink
+        err.ContainerControl = Me
     End Sub
 
     Private Sub btnLogout_Click(sender As Object, e As EventArgs)
@@ -118,9 +124,11 @@ Public Class frmRegisterCustomer
 
     Private Sub btnRegister_Click(sender As Object, e As EventArgs)
         Try
+            err.Clear()
+
             Dim fullName As String = txtFullName.Text.Trim()
             Dim address As String = txtAddress.Text.Trim()
-            Dim phone As String = txtPhone.Text.Trim()
+            Dim phone As String = ValidationHelper.NormalizePhone(txtPhone.Text)
             Dim email As String = txtEmail.Text.Trim()
             Dim meterNumber As String = txtMeterNumber.Text.Trim()
             Dim installationDate As Date = dtpInstallationDate.Value.Date
@@ -129,9 +137,24 @@ Public Class frmRegisterCustomer
             If String.IsNullOrWhiteSpace(fullName) OrElse
                String.IsNullOrWhiteSpace(address) OrElse
                String.IsNullOrWhiteSpace(phone) OrElse
-               String.IsNullOrWhiteSpace(email) OrElse
                String.IsNullOrWhiteSpace(txtInitialMeterReading.Text) Then
                 MessageBox.Show("Please complete all fields.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+
+            Dim emailError As String = ValidateEmailField()
+            If Not String.IsNullOrWhiteSpace(emailError) Then
+                err.SetError(txtEmail, emailError)
+                MessageBox.Show(emailError, "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                txtEmail.Focus()
+                Return
+            End If
+
+            Dim phoneError As String = ValidatePhoneField()
+            If Not String.IsNullOrWhiteSpace(phoneError) Then
+                err.SetError(txtPhone, phoneError)
+                MessageBox.Show(phoneError, "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                txtPhone.Focus()
                 Return
             End If
 
@@ -191,6 +214,42 @@ Public Class frmRegisterCustomer
                             MessageBoxIcon.Error)
         End Try
     End Sub
+
+    Private Sub txtEmail_Leave(sender As Object, e As EventArgs)
+        Dim emailError As String = ValidateEmailField()
+        err.SetError(txtEmail, emailError)
+    End Sub
+
+    Private Sub txtPhone_Leave(sender As Object, e As EventArgs)
+        Dim phoneError As String = ValidatePhoneField()
+        err.SetError(txtPhone, phoneError)
+    End Sub
+
+    Private Function ValidateEmailField() As String
+        Dim email As String = txtEmail.Text.Trim()
+        If String.IsNullOrWhiteSpace(email) Then
+            Return String.Empty
+        End If
+
+        If ValidationHelper.IsValidEmail(email) Then
+            Return String.Empty
+        End If
+
+        Return "Invalid email format. Example: user@example.com"
+    End Function
+
+    Private Function ValidatePhoneField() As String
+        Dim phone As String = txtPhone.Text.Trim()
+        If String.IsNullOrWhiteSpace(phone) Then
+            Return "Phone number is required."
+        End If
+
+        If ValidationHelper.IsValidEthiopianPhone(phone) Then
+            Return String.Empty
+        End If
+
+        Return "Invalid phone format. Use 09XXXXXXXX, 07XXXXXXXX, +2519XXXXXXXX, or +2517XXXXXXXX."
+    End Function
 
     Private Shared Function MeterNumberExists(conn As MySqlConnection, tx As MySqlTransaction, meterNumber As String) As Boolean
         Const sql As String = "SELECT COUNT(1) FROM customers WHERE meter_number = @meter_number;"

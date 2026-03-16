@@ -28,6 +28,7 @@ Public Class frmCustomerDashboard
     Private ReadOnly dgvBills As New DataGridView()
     Private ReadOnly dgvPayments As New DataGridView()
     Private ReadOnly btnChangePassword As New Button()
+    Private ReadOnly btnProfile As New Button()
     Private ReadOnly btnPayOnline As New Button()
     Private ReadOnly btnLogout As New Button()
 
@@ -167,6 +168,16 @@ Public Class frmCustomerDashboard
         btnChangePassword.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         AddHandler btnChangePassword.Click, AddressOf btnChangePassword_Click
 
+        btnProfile.Text = "👤 Profile Settings"
+        btnProfile.Width = 240
+        btnProfile.Height = 56
+        btnProfile.FlatStyle = FlatStyle.Flat
+        btnProfile.FlatAppearance.BorderSize = 0
+        btnProfile.BackColor = ColorTranslator.FromHtml("#3498db")
+        btnProfile.ForeColor = Color.White
+        btnProfile.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        AddHandler btnProfile.Click, AddressOf btnProfile_Click
+
         btnPayOnline.Text = "💳 Pay Online"
         btnPayOnline.Width = 240
         btnPayOnline.Height = 56
@@ -177,6 +188,7 @@ Public Class frmCustomerDashboard
         btnPayOnline.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         AddHandler btnPayOnline.Click, AddressOf btnPayOnline_Click
         actionsPanel.Controls.Add(btnChangePassword)
+        actionsPanel.Controls.Add(btnProfile)
         actionsPanel.Controls.Add(btnPayOnline)
 
         pnlMainCard.Controls.Add(tabMain)
@@ -212,6 +224,14 @@ Public Class frmCustomerDashboard
                                                           ColorTranslator.FromHtml("#3498db"),
                                                           Drawing2D.LinearGradientMode.Vertical)
             e.Graphics.FillRectangle(brush, Me.ClientRectangle)
+        End Using
+    End Sub
+
+    Private Sub btnProfile_Click(sender As Object, e As EventArgs)
+        Using frm As New frmProfileSettings()
+            If frm.ShowDialog(Me) = DialogResult.OK Then
+                LoadWelcomeAndMeterInfo()
+            End If
         End Using
     End Sub
 

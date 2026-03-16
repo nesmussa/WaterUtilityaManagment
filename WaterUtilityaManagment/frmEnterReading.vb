@@ -28,7 +28,6 @@ Public Class frmEnterReading
     Private ReadOnly btnProcessPayment As New Button()
     Private ReadOnly btnViewBills As New Button()
     Private ReadOnly btnMyActivity As New Button()
-    Private ReadOnly btnChangePassword As New Button()
     Private ReadOnly btnProfile As New Button()
     Private ReadOnly btnLogout As New Button()
     Private ReadOnly err As New ErrorProvider()
@@ -253,16 +252,10 @@ Public Class frmEnterReading
         btnMyActivity.Height = 66
         AddHandler btnMyActivity.Click, AddressOf btnMyActivity_Click
 
-        btnChangePassword.Text = "Change Password"
-        btnChangePassword.Width = 150
-        btnChangePassword.Height = 66
-        AddHandler btnChangePassword.Click, AddressOf btnChangePassword_Click
-
         StyleQuickActionButton(btnRegisterCustomer, "👤")
         StyleQuickActionButton(btnProcessPayment, "💳")
         StyleQuickActionButton(btnViewBills, "📄")
         StyleQuickActionButton(btnMyActivity, "📈")
-        StyleQuickActionButton(btnChangePassword, "🔐")
 
         pnlRightCard.Dock = DockStyle.Fill
         pnlRightCard.BackColor = Color.White
@@ -333,7 +326,6 @@ Public Class frmEnterReading
         actionsFlow.Controls.Add(btnProcessPayment)
         actionsFlow.Controls.Add(btnViewBills)
         actionsFlow.Controls.Add(btnMyActivity)
-        actionsFlow.Controls.Add(btnChangePassword)
         pnlBottomActions.Controls.Add(actionsFlow)
 
         Me.Controls.Add(splitMain)
@@ -588,12 +580,6 @@ Public Class frmEnterReading
             frm.ShowDialog(Me)
         End Using
         LoadTodayCollections()
-    End Sub
-
-    Private Sub btnChangePassword_Click(sender As Object, e As EventArgs)
-        Using frm As New frmChangePassword()
-            frm.ShowDialog(Me)
-        End Using
     End Sub
 
     Private Sub btnProfile_Click(sender As Object, e As EventArgs)

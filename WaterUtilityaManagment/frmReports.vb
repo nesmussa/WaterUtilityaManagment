@@ -14,10 +14,13 @@ Public Class frmReports
     Private ReadOnly pnlChartHost As New Panel()
     Private ReadOnly pnlPaidCard As New Panel()
     Private ReadOnly pnlUnpaidCard As New Panel()
+    Private ReadOnly pnlPartialCard As New Panel()
     Private ReadOnly lblPaidCardTitle As New Label()
     Private ReadOnly lblPaidCardValue As New Label()
     Private ReadOnly lblUnpaidCardTitle As New Label()
     Private ReadOnly lblUnpaidCardValue As New Label()
+    Private ReadOnly lblPartialCardTitle As New Label()
+    Private ReadOnly lblPartialCardValue As New Label()
 
     Private ReadOnly dgvBillSummary As New DataGridView()
     Private ReadOnly lblPaidSummary As New Label()
@@ -48,6 +51,10 @@ Public Class frmReports
     Private _paidTotalSummary As Decimal
     Private _unpaidTotalSummary As Decimal
     Private _partialTotalSummary As Decimal
+    Private _paidCountSummary As Integer
+    Private _unpaidCountSummary As Integer
+    Private _partialCountSummary As Integer
+    Private _summaryTab As TabPage
 
     Public Sub New()
         InitializeComponent()
@@ -155,6 +162,8 @@ Public Class frmReports
         Dim tabOutstanding As New TabPage("Outstanding Balances")
         Dim tabStaff As New TabPage("Staff Activity")
 
+        _summaryTab = tabSummary
+
         SetupSummaryTab(tabSummary)
         SetupRevenueTab(tabRevenue)
         SetupOutstandingTab(tabOutstanding)
@@ -233,17 +242,18 @@ Public Class frmReports
 
     Private Sub SetupSummaryTab(tab As TabPage)
         tab.BackColor = ColorTranslator.FromHtml("#ecf0f1")
+        AddHandler tab.Resize, AddressOf SummaryTab_Resize
 
         pnlChartHost.Left = 16
         pnlChartHost.Top = 16
         pnlChartHost.Width = 420
-        pnlChartHost.Height = 320
+        pnlChartHost.Height = 340
         pnlChartHost.BackColor = Color.White
 
         chartSummary.Left = 10
         chartSummary.Top = 10
         chartSummary.Width = 400
-        chartSummary.Height = 300
+        chartSummary.Height = 320
         chartSummary.Anchor = AnchorStyles.Top Or AnchorStyles.Left
         chartSummary.BackColor = Color.White
         AddHandler chartSummary.Paint, AddressOf chartSummary_Paint
@@ -253,7 +263,7 @@ Public Class frmReports
         dgvBillSummary.Top = 16
         dgvBillSummary.Width = 400
         dgvBillSummary.Height = 300
-        dgvBillSummary.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        dgvBillSummary.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvBillSummary.ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
         dgvBillSummary.AlternatingRowsDefaultCellStyle.BackColor = ColorTranslator.FromHtml("#f8f9f9")
 
@@ -270,7 +280,7 @@ Public Class frmReports
         lblPaidCardValue.Left = 12
         lblPaidCardValue.Top = 34
         lblPaidCardValue.ForeColor = Color.White
-        lblPaidCardValue.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold)
+        lblPaidCardValue.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         pnlPaidCard.Controls.Add(lblPaidCardTitle)
         pnlPaidCard.Controls.Add(lblPaidCardValue)
 
@@ -287,14 +297,86 @@ Public Class frmReports
         lblUnpaidCardValue.Left = 12
         lblUnpaidCardValue.Top = 34
         lblUnpaidCardValue.ForeColor = Color.White
-        lblUnpaidCardValue.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold)
+        lblUnpaidCardValue.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         pnlUnpaidCard.Controls.Add(lblUnpaidCardTitle)
         pnlUnpaidCard.Controls.Add(lblUnpaidCardValue)
+
+        pnlPartialCard.Left = 446
+        pnlPartialCard.Top = 350
+        pnlPartialCard.Width = 210
+        pnlPartialCard.Height = 72
+        pnlPartialCard.BackColor = ColorTranslator.FromHtml("#f39c12")
+        lblPartialCardTitle.Text = "Partial"
+        lblPartialCardTitle.Left = 12
+        lblPartialCardTitle.Top = 10
+        lblPartialCardTitle.ForeColor = Color.White
+        lblPartialCardTitle.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        lblPartialCardValue.Left = 12
+        lblPartialCardValue.Top = 34
+        lblPartialCardValue.ForeColor = Color.White
+        lblPartialCardValue.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
+        pnlPartialCard.Controls.Add(lblPartialCardTitle)
+        pnlPartialCard.Controls.Add(lblPartialCardValue)
 
         tab.Controls.Add(pnlChartHost)
         tab.Controls.Add(dgvBillSummary)
         tab.Controls.Add(pnlPaidCard)
         tab.Controls.Add(pnlUnpaidCard)
+        tab.Controls.Add(pnlPartialCard)
+
+        LayoutSummaryTab()
+    End Sub
+
+    Private Sub SummaryTab_Resize(sender As Object, e As EventArgs)
+        LayoutSummaryTab()
+    End Sub
+
+    Private Sub LayoutSummaryTab()
+        If _summaryTab Is Nothing Then
+            Return
+        End If
+
+        Const margin As Integer = 16
+        Const gap As Integer = 10
+        Const chartAreaWidth As Integer = 420
+        Const cardsHeight As Integer = 74
+
+        Dim contentHeight As Integer = Math.Max(380, _summaryTab.ClientSize.Height - (margin * 2))
+        Dim baseChartHeight As Integer = Math.Max(230, contentHeight - cardsHeight - gap)
+        Dim chartHeight As Integer = Math.Max(160, baseChartHeight \ 2)
+
+        pnlChartHost.Left = margin
+        pnlChartHost.Top = margin
+        pnlChartHost.Width = chartAreaWidth
+        pnlChartHost.Height = chartHeight
+
+        chartSummary.Left = 10
+        chartSummary.Top = 10
+        chartSummary.Width = pnlChartHost.Width - 20
+        chartSummary.Height = pnlChartHost.Height - 20
+
+        Dim cardsTop As Integer = pnlChartHost.Bottom + gap
+        Dim cardWidth As Integer = (chartAreaWidth - (2 * gap)) \ 3
+
+        pnlPaidCard.Left = margin
+        pnlPaidCard.Top = cardsTop
+        pnlPaidCard.Width = cardWidth
+        pnlPaidCard.Height = cardsHeight
+
+        pnlUnpaidCard.Left = pnlPaidCard.Right + gap
+        pnlUnpaidCard.Top = cardsTop
+        pnlUnpaidCard.Width = cardWidth
+        pnlUnpaidCard.Height = cardsHeight
+
+        pnlPartialCard.Left = pnlUnpaidCard.Right + gap
+        pnlPartialCard.Top = cardsTop
+        pnlPartialCard.Width = chartAreaWidth - ((cardWidth * 2) + (2 * gap))
+        pnlPartialCard.Height = cardsHeight
+
+        dgvBillSummary.Left = pnlChartHost.Right + 14
+        dgvBillSummary.Top = margin
+        dgvBillSummary.Width = Math.Max(300, _summaryTab.ClientSize.Width - dgvBillSummary.Left - margin)
+        dgvBillSummary.Height = Math.Max(260, _summaryTab.ClientSize.Height - (margin * 2))
     End Sub
 
     Private Sub SetupRevenueTab(tab As TabPage)
@@ -413,12 +495,16 @@ Public Class frmReports
 
             lblPaidSummary.Text = $"Paid Bills: {paidCount} | Amount: {paidTotal:N2}"
             lblUnpaidSummary.Text = $"Unpaid Bills: {unpaidCount} | Amount: {unpaidTotal:N2}"
-            lblPaidCardValue.Text = $"{paidCount} | {paidTotal:N2}"
-            lblUnpaidCardValue.Text = $"{unpaidCount} | {unpaidTotal:N2}"
+            lblPaidCardValue.Text = $"{paidCount} | {paidTotal:N2} ETB"
+            lblUnpaidCardValue.Text = $"{unpaidCount} | {unpaidTotal:N2} ETB"
+            lblPartialCardValue.Text = $"{partialCount} | {partialTotal:N2} ETB"
 
             _paidTotalSummary = paidTotal
             _unpaidTotalSummary = unpaidTotal
             _partialTotalSummary = partialTotal
+            _paidCountSummary = paidCount
+            _unpaidCountSummary = unpaidCount
+            _partialCountSummary = partialCount
             chartSummary.Invalidate()
 
             Dim summaryTable As New DataTable()
@@ -536,8 +622,8 @@ Public Class frmReports
     End Sub
 
     Private Sub chartSummary_Paint(sender As Object, e As PaintEventArgs)
-        Dim total As Decimal = _paidTotalSummary + _unpaidTotalSummary + _partialTotalSummary
-        If total <= 0D Then
+        Dim totalCount As Integer = _paidCountSummary + _unpaidCountSummary + _partialCountSummary
+        If totalCount <= 0 Then
             TextRenderer.DrawText(e.Graphics,
                                   "No data",
                                   New Font("Segoe UI", 10.0F, FontStyle.Bold),
@@ -548,8 +634,8 @@ Public Class frmReports
         End If
 
         Dim pieRect As New Rectangle(40, 36, 210, 210)
-        Dim paidSweep As Single = CSng((_paidTotalSummary / total) * 360D)
-        Dim unpaidSweep As Single = CSng((_unpaidTotalSummary / total) * 360D)
+        Dim paidSweep As Single = CSng((_paidCountSummary / CDbl(totalCount)) * 360D)
+        Dim unpaidSweep As Single = CSng((_unpaidCountSummary / CDbl(totalCount)) * 360D)
         Dim partialSweep As Single = 360.0F - paidSweep - unpaidSweep
 
         e.Graphics.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
@@ -573,9 +659,9 @@ Public Class frmReports
             e.Graphics.FillPie(partialBrush, pieRect, startAngle, partialSweep)
         End Using
 
-        DrawPieLabel(e.Graphics, pieRect, -90 + (paidSweep / 2), paidSweep, total, _paidTotalSummary)
-        DrawPieLabel(e.Graphics, pieRect, -90 + paidSweep + (unpaidSweep / 2), unpaidSweep, total, _unpaidTotalSummary)
-        DrawPieLabel(e.Graphics, pieRect, -90 + paidSweep + unpaidSweep + (partialSweep / 2), partialSweep, total, _partialTotalSummary)
+        DrawPieLabel(e.Graphics, pieRect, -90 + (paidSweep / 2), paidSweep, totalCount, _paidCountSummary)
+        DrawPieLabel(e.Graphics, pieRect, -90 + paidSweep + (unpaidSweep / 2), unpaidSweep, totalCount, _unpaidCountSummary)
+        DrawPieLabel(e.Graphics, pieRect, -90 + paidSweep + unpaidSweep + (partialSweep / 2), partialSweep, totalCount, _partialCountSummary)
 
         Dim legendTop As Integer = 260
         DrawLegendItem(e.Graphics, 58, legendTop, ColorTranslator.FromHtml("#27ae60"), "Paid")
@@ -598,8 +684,8 @@ Public Class frmReports
                                     pieRect As Rectangle,
                                     angle As Single,
                                     sweep As Single,
-                                    total As Decimal,
-                                    value As Decimal)
+                                    total As Integer,
+                                    value As Integer)
         If sweep <= 0.1F Then
             Return
         End If
@@ -610,7 +696,7 @@ Public Class frmReports
         Dim radius As Single = pieRect.Width / 3.2F
         Dim x As Single = cx + CSng(Math.Cos(rad) * radius)
         Dim y As Single = cy + CSng(Math.Sin(rad) * radius)
-        Dim percent As Decimal = If(total <= 0D, 0D, (value / total) * 100D)
+        Dim percent As Decimal = If(total <= 0, 0D, (value / CDec(total)) * 100D)
 
         TextRenderer.DrawText(g,
                               $"{percent:0.#}%",

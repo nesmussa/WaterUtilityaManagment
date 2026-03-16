@@ -17,14 +17,15 @@ Public Class frmChangePassword
 
     Private Sub InitializeComponent()
         Me.Text = "Change Password"
-        Me.StartPosition = FormStartPosition.CenterScreen
-        Me.ClientSize = New Size(1200, 800)
-        Me.MinimumSize = New Size(900, 600)
-        Me.WindowState = FormWindowState.Maximized
-        Me.FormBorderStyle = FormBorderStyle.Sizable
-        Me.MaximizeBox = True
-        Me.MinimizeBox = True
-        Me.ShowInTaskbar = True
+        Me.StartPosition = FormStartPosition.CenterParent
+        Me.ClientSize = New Size(470, 320)
+        Me.MinimumSize = New Size(470, 320)
+        Me.MaximumSize = New Size(470, 320)
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
+        Me.ControlBox = False
+        Me.MaximizeBox = False
+        Me.MinimizeBox = False
+        Me.ShowInTaskbar = False
         Me.BackColor = Color.White
         Me.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular)
 
@@ -102,8 +103,6 @@ Public Class frmChangePassword
 
         Me.AcceptButton = btnSave
         Me.CancelButton = btnCancel
-
-        UiStyleHelper.AddDialogCloseButton(Me)
     End Sub
 
     Private Sub btnSave_Click(sender As Object, e As EventArgs)

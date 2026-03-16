@@ -441,22 +441,14 @@ Public Class frmLogin
             CurrentUser.Role = row("role").ToString()
 
             Dim forcePasswordChange As Boolean = Convert.ToBoolean(If(row("force_password_change") Is DBNull.Value, False, row("force_password_change")))
-            If forcePasswordChange AndAlso String.Equals(CurrentUser.Role, "Customer", StringComparison.OrdinalIgnoreCase) Then
-                Using frm As New frmChangePassword()
-                    If frm.ShowDialog() <> DialogResult.OK Then
-                        Return
-                    End If
-                End Using
-            End If
-
             AuditLogger.LogAction(CurrentUser.UserId, "Login", $"User logged in as {CurrentUser.Role}")
-            OpenDashboardByRole(CurrentUser.Role)
+            OpenDashboardByRole(CurrentUser.Role, forcePasswordChange)
         Catch ex As Exception
             MessageBox.Show("Login failed: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
 
-    Private Sub OpenDashboardByRole(role As String)
+    Private Sub OpenDashboardByRole(role As String, forcePasswordChange As Boolean)
         Dim nextForm As Form
 
         Select Case role.Trim().ToLowerInvariant()
@@ -472,6 +464,13 @@ Public Class frmLogin
         End Select
 
         nextForm.Show()
+
+        If forcePasswordChange AndAlso String.Equals(role, "customer", StringComparison.OrdinalIgnoreCase) Then
+            Using frm As New frmChangePassword()
+                frm.ShowDialog(nextForm)
+            End Using
+        End If
+
         DialogResult = DialogResult.OK
         Close()
     End Sub

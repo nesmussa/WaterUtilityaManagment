@@ -1,90 +1,120 @@
 # Water Utility Management System
 
-Desktop water billing and customer management application built with VB.NET Windows Forms and MySQL.
+Desktop water utility billing and customer management application built with `VB.NET WinForms` and `MySQL`.
 
-## Overview
+## Student Information
 
-This project supports a role-based workflow for:
-- customer registration and meter management,
-- bill generation from meter readings,
-- payment collection and bill allocation,
-- manager-level reporting and staff administration.
+- **Name:** Neserelah mussa
+- **ID:** IUNSR/0623/13
 
-The application uses MySQL as the data store and includes SQL schema/setup scripts in `WaterUtilityaManagment/Database/WaterUtilityDB.sql`.
+## Project Description
 
-## Tech Stack
+This system automates the core workflow of a water utility office:
 
-- VB.NET (`net10.0-windows`)
-- Windows Forms
-- MySQL
+1. Registering customers and assigning meters.
+2. Recording meter readings.
+3. Generating bills from consumption and active tariff rates.
+4. Receiving payments and allocating them to bills.
+5. Monitoring operations through manager reports and audit logs.
+
+The application is role-based and provides separate dashboards and tools for managers, staff, and customers.
+
+## Technology Stack
+
+- `VB.NET` (`net10.0-windows`)
+- `Windows Forms`
+- `MySQL`
 - `MySql.Data`
 - `System.Configuration.ConfigurationManager`
+- `iText7` (PDF export)
 
-## Role-Based Features
+## Key Functional Modules
 
-### Manager
-- Access manager dashboard (`frmReports`)
-- View reports:
-  - paid vs unpaid summary,
-  - revenue by date range,
-  - outstanding balances,
-  - staff activity
-- Manage staff accounts (`frmUserManagement`):
-  - add staff,
-  - reset password,
-  - enable/disable account
-- Manage tariffs (`frmTariffs`, `frmTariffEdit`)
+### Authentication and Session
+- Secure login with SHA-256 hashed password verification.
+- Role-based navigation to dashboards.
+- Session state handled using `CurrentUser` and `SessionManager`.
 
-### Staff
-- Access meter reading form (`frmEnterReading`)
-- Register customers (`frmRegisterCustomer`)
-- Save new readings and auto-generate bills from active tariff
-- Process payments and allocate amounts to selected unpaid bills (`frmPayment`)
+### Customer Registration and Meter Setup
+- Staff can register a customer in `frmRegisterCustomer`.
+- Auto-generates meter number.
+- Captures initial reading and creates initial meter reading record.
+- Includes form validation for:
+  - email format
+  - Ethiopian phone format (`09`, `07`, `+2519`, `+2517`)
 
-### Customer
-- Access customer dashboard (`frmCustomerDashboard`)
-- View latest readings, bills, and payment history
-- Change password
-- Pay outstanding bills through online payment form (`frmOnlinePayment`)
+### Meter Reading and Billing
+- Staff records new readings in `frmEnterReading`.
+- Consumption is calculated from previous reading.
+- Bill is generated automatically using active tariff.
 
-## Core Components
+### Payment Management
+- Staff can process payments in `frmPayment`.
+- Customer online payment available in `frmOnlinePayment`.
+- Bill allocation and outstanding balance calculations are supported.
 
-- `DatabaseHelper.vb`: shared DB operations and core schema checks
-- `PasswordHelper.vb`: SHA-256 hashing/verification
-- `AuditLogger.vb`: audit log writes for key actions
-- `CurrentUser.vb`: in-memory session user state
-- `SessionManager.vb`: centralized logout/navigation reset
+### Reporting and Export
+Manager dashboard `frmReports` includes:
+- Paid/Unpaid/Partial bill status summary
+- Revenue by period
+- Outstanding balances
+- Staff activity
+- Export support:
+  - CSV export
+  - Styled PDF table export (headers, borders, alternating row colors)
+
+### User and Profile Management
+- User account administration in `frmUserManagement`.
+- Add staff, reset passwords, enable/disable users.
+- Profile updates (username/full name/password) through `frmProfileSettings`.
+
+### Auditing and Maintenance
+- Action logging through `AuditLogger`.
+- Backup and restore tools.
+- Runtime schema compatibility checks via `DatabaseHelper.EnsureCoreSchema()`.
+
+## Important Project Files
+
+- `WaterUtilityaManagment/frmLogin.vb` – login and role routing
+- `WaterUtilityaManagment/frmReports.vb` – manager dashboard/reports
+- `WaterUtilityaManagment/frmEnterReading.vb` – staff operations
+- `WaterUtilityaManagment/frmCustomerDashboard.vb` – customer dashboard
+- `WaterUtilityaManagment/frmRegisterCustomer.vb` – customer onboarding
+- `WaterUtilityaManagment/frmUserManagement.vb` – user management
+- `WaterUtilityaManagment/GridExportHelper.vb` – CSV/PDF exports
+- `WaterUtilityaManagment/DatabaseHelper.vb` – DB utilities and schema checks
+- `WaterUtilityaManagment/Database/WaterUtilityDB.sql` – schema and seed script
 
 ## Database
 
-Use `WaterUtilityaManagment/Database/WaterUtilityDB.sql` to create:
-- tables (`users`, `customers`, `meter_readings`, `bills`, `payments`, `payment_allocations`, `tariffs`, `audit_log`)
-- views and stored procedures for reporting/history
-- sample seed users
+Run `WaterUtilityaManagment/Database/WaterUtilityDB.sql` to create:
 
-The app also ensures some schema elements at runtime (for example `is_active`, `force_password_change`, and `audit_log` structure updates).
+- Tables: `users`, `customers`, `meter_readings`, `bills`, `payments`, `payment_allocations`, `tariffs`, `audit_log`
+- Views/stored procedures for reporting and history
+- Seed users for manager, staff, and customer testing
 
-## Setup
+The application also adds/aligns some compatibility columns at runtime (`is_active`, `force_password_change`, and `audit_log` structure fields).
+
+## Setup Instructions
 
 1. Install MySQL Server.
-2. Run `WaterUtilityaManagment/Database/WaterUtilityDB.sql`.
-3. Update connection string in `WaterUtilityaManagment/App.config`.
-4. Build and run the project.
-5. Open the app and click **Go To Login**.
+2. Execute `WaterUtilityaManagment/Database/WaterUtilityDB.sql`.
+3. Update DB connection string in `WaterUtilityaManagment/App.config`.
+4. Restore NuGet packages.
+5. Build and run the project.
+6. From welcome screen, click **Go To Login**.
 
-## Default Login Accounts
-
-Use these accounts for initial testing.
+## Default Test Accounts
 
 | Role | Username | Password | Access |
 |---|---|---|---|
-| Manager | `admin` | `admin123` | Full access to all features, reports, and user management |
-| Staff | `staff1` | `staff123` | Can enter meter readings, record payments, and view customers |
-| Customer | `cust1` | `customer123` | Can view own bills, payments, and consumption history |
+| Manager | `admin` | `admin123` | Full reporting and administration |
+| Staff | `staff1` | `staff123` | Meter reading, customer registration, payment processing |
+| Customer | `cust1` | `customer123` | View own usage, bills, and payments |
 
 ## Security Notes
 
-- Passwords are stored as SHA-256 hashes.
-- Audit records are created for login and key operations.
-- Default credentials are for development/demo use only.
-- Change all default passwords before production use.
+- Passwords are hashed using SHA-256 before storage.
+- Sensitive actions are logged in `audit_log`.
+- Default credentials are for demo/testing only.
+- Change default passwords before production deployment.

@@ -27,7 +27,6 @@ Public Class frmCustomerDashboard
     Private ReadOnly lstNotifications As New ListBox()
     Private ReadOnly dgvBills As New DataGridView()
     Private ReadOnly dgvPayments As New DataGridView()
-    Private ReadOnly btnChangePassword As New Button()
     Private ReadOnly btnProfile As New Button()
     Private ReadOnly btnPayOnline As New Button()
     Private ReadOnly btnLogout As New Button()
@@ -158,16 +157,6 @@ Public Class frmCustomerDashboard
         pnlSidebar.Controls.Add(lstNotifications)
 
         Dim actionsPanel As New FlowLayoutPanel() With {.Dock = DockStyle.Bottom, .Height = 86, .FlowDirection = FlowDirection.LeftToRight, .WrapContents = False}
-        btnChangePassword.Text = "🔐 Change Password"
-        btnChangePassword.Width = 240
-        btnChangePassword.Height = 56
-        btnChangePassword.FlatStyle = FlatStyle.Flat
-        btnChangePassword.FlatAppearance.BorderSize = 0
-        btnChangePassword.BackColor = ColorTranslator.FromHtml("#27ae60")
-        btnChangePassword.ForeColor = Color.White
-        btnChangePassword.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
-        AddHandler btnChangePassword.Click, AddressOf btnChangePassword_Click
-
         btnProfile.Text = "👤 Profile Settings"
         btnProfile.Width = 240
         btnProfile.Height = 56
@@ -187,7 +176,6 @@ Public Class frmCustomerDashboard
         btnPayOnline.ForeColor = Color.White
         btnPayOnline.Font = New Font("Segoe UI", 10.0F, FontStyle.Bold)
         AddHandler btnPayOnline.Click, AddressOf btnPayOnline_Click
-        actionsPanel.Controls.Add(btnChangePassword)
         actionsPanel.Controls.Add(btnProfile)
         actionsPanel.Controls.Add(btnPayOnline)
 
@@ -241,7 +229,7 @@ Public Class frmCustomerDashboard
     End Sub
 
     Private Shared Function CreateInfoBox(backColor As Color, title As String, valueLabel As Label) As Panel
-        Dim box As New Panel() With {.Width = 260, .Height = 78, .BackColor = backColor, .Margin = New Padding(0, 0, 10, 0)}
+        Dim box As New Panel() With {.Width = 280, .Height = 78, .BackColor = backColor, .Margin = New Padding(0, 0, 16, 0)}
         Dim lblTitle As New Label() With {.Text = title, .AutoSize = True, .ForeColor = Color.White, .Font = New Font("Segoe UI", 9.0F, FontStyle.Regular), .Left = 10, .Top = 8}
         valueLabel.Left = 10
         valueLabel.Top = 35
@@ -443,58 +431,6 @@ Public Class frmCustomerDashboard
                                   New Point(CInt(points(i).X - 24), CInt(chartRect.Bottom + 8)),
                                   ColorTranslator.FromHtml("#2c3e50"))
         Next
-    End Sub
-
-    Private Sub btnChangePassword_Click(sender As Object, e As EventArgs)
-        Try
-            Dim currentPassword As String = Microsoft.VisualBasic.Interaction.InputBox("Enter current password:", "Change Password")
-            If String.IsNullOrWhiteSpace(currentPassword) Then
-                Return
-            End If
-
-            Dim newPassword As String = Microsoft.VisualBasic.Interaction.InputBox("Enter new password:", "Change Password")
-            If String.IsNullOrWhiteSpace(newPassword) Then
-                MessageBox.Show("New password cannot be empty.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Return
-            End If
-
-            Dim confirmPassword As String = Microsoft.VisualBasic.Interaction.InputBox("Confirm new password:", "Change Password")
-            If newPassword <> confirmPassword Then
-                MessageBox.Show("New password and confirmation do not match.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Return
-            End If
-
-            Const getSql As String = "SELECT password_hash FROM users WHERE id = @user_id LIMIT 1;"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@user_id", CurrentUser.UserId}
-            }
-            Dim hashObj As Object = DatabaseHelper.ExecuteScalar(getSql, parameters)
-            If hashObj Is Nothing OrElse hashObj Is DBNull.Value Then
-                MessageBox.Show("Unable to verify current password.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                Return
-            End If
-
-            If Not PasswordHelper.VerifySha256Password(currentPassword, hashObj.ToString()) Then
-                MessageBox.Show("Current password is incorrect.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Return
-            End If
-
-            Dim newHash As String = PasswordHelper.ComputeSha256Hash(newPassword)
-            Const updateSql As String = "UPDATE users SET password_hash = @password_hash, force_password_change = 0 WHERE id = @user_id;"
-            Dim updateParams As New Dictionary(Of String, Object) From {
-                {"@password_hash", newHash},
-                {"@user_id", CurrentUser.UserId}
-            }
-
-            DatabaseHelper.ExecuteNonQuery(updateSql, updateParams)
-            AuditLogger.LogAction(CurrentUser.UserId, "PasswordChanged", "Customer changed password from dashboard")
-            MessageBox.Show("Password changed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-        Catch ex As Exception
-            MessageBox.Show("Failed to change password: " & ex.Message,
-                            "Error",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error)
-        End Try
     End Sub
 
     Private Sub btnPayOnline_Click(sender As Object, e As EventArgs)
